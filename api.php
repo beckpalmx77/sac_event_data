@@ -1,5 +1,9 @@
 <?php
-date_default_timezone_set("Asia/Bangkok");
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
 require_once 'config/connect_db.php';
 
 $action = $_POST['action'] ?? '';
@@ -32,8 +36,17 @@ switch ($action) {
     case 'get_provinces':
         getProvinces();
         break;
+    case 'logout':
+        logout();
+        break;
     default:
         echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
+}
+
+function logout() {
+    session_destroy();
+    header('Location: login.php');
+    exit;
 }
 
 function getEvent() {

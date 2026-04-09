@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -41,7 +48,15 @@
     <div class="container-fluid py-3 px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-center">📋 บันทึกข้อมูลงาน Event</h2>
-            <a href="dashboard.php" target="_blank" class="btn btn-info">📊 Dashboard</a>
+            <div>
+                <span class="me-2 text-muted"><?= $_SESSION['full_name'] ?? '' ?></span>
+                <a href="dashboard.php" target="_blank" class="btn btn-info">📊 Dashboard</a>
+                <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="manage_user.php" class="btn btn-warning">👥 ผู้ใช้</a>
+                <?php endif; ?>
+                <a href="change_password.php" class="btn btn-outline-warning">🔑 เปลี่ยนรหัส</a>
+                <a href="logout.php" class="btn btn-outline-danger">ออกจากระบบ</a>
+            </div>
         </div>
         
         <div class="row summary-card" id="summarySection">
