@@ -218,6 +218,7 @@ function getDashboardSummary() {
     $sql = "
         SELECT 
             COUNT(*) as total_shops,
+            COUNT(CASE WHEN participants_after > 0 THEN 1 END) as shops_came,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
             COALESCE(SUM(reserve_room), 0) as total_reserve_room,

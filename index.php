@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บันทึกข้อมูลงาน Event</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
@@ -40,7 +41,7 @@
     <div class="container-fluid py-3 px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-center">📋 บันทึกข้อมูลงาน Event</h2>
-            <!--a href="dashboard.php" class="btn btn-info">📊 Dashboard</a-->
+            <a href="dashboard.php" target="_blank" class="btn btn-info">📊 Dashboard</a>
         </div>
         
         <div class="row summary-card" id="summarySection">
@@ -51,7 +52,7 @@
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalParticipantsBeforeShop">0</div>
-                <div class="label">คน (จอง)</div>
+                <div class="label">คน (ลงทะเบียน)</div>
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalParticipantsAfterShop">0</div>
@@ -83,11 +84,11 @@
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTireRealShop">0</div>
-                <div class="label">จองจริง</div>
+                <div class="label">จองยางจริง</div>
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTirePercentShop">0%</div>
-                <div class="label">% จองจริง</div>
+                <div class="label">% จองยางจริง</div>
             </div>
         </div>
         <div class="row summary-card" id="summarySectionUser">
@@ -98,7 +99,7 @@
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalParticipantsBeforeUser">0</div>
-                <div class="label">คน (จอง)</div>
+                <div class="label">คน (ลงทะเบียน)</div>
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalParticipantsAfterUser">0</div>
@@ -122,11 +123,11 @@
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTireRealUser">0</div>
-                <div class="label">จองจริง</div>
+                <div class="label">จองยางจริง</div>
             </div>
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTirePercentUser">0%</div>
-                <div class="label">% จองจริง</div>
+                <div class="label">% จองยางจริง</div>
             </div>
         </div>
 
@@ -187,7 +188,6 @@
                                 <th>หมายเหตุ</th>
                                 <th>คน (ก่อน)</th>
                                 <th>คน (จริง)</th>
-                                <th>ห้อง</th>
                                 <th>จอง 40</th>
                                 <th>จอง 80</th>
                                 <th>จอง 120</th>
@@ -215,10 +215,9 @@
                         <th>ประเภท</th>
                         <th>จังหวัด</th>
                         <th>หมายเหตุ</th>
-                        <th>คน (ก่อน)</th>
-                        <th>คน (จริง)</th>
-                        <th>ห้อง</th>
-                        <th>จอง 40</th>
+                                <th>คน (ก่อน)</th>
+                                <th>คน (จริง)</th>
+                                <th>จอง 40</th>
                         <th>จอง 80</th>
                         <th>จอง 120</th>
                         <th>จอง 200</th>
@@ -379,7 +378,7 @@
         let modal;
         let tableShop, tableUser;
 
-        const tableColumns = [
+        const shopColumns = [
             { title: 'ลำดับ', data: 'total_no' },
             { title: 'เซลส์', data: 'sales_name' },
             { title: 'ลำดับในเซลส์', data: 'order_no' },
@@ -387,9 +386,36 @@
             { title: 'ประเภท', data: 'type', render: (data) => data === 'user' ? '👤 ผู้ใช้' : '🏪 ร้านค้า' },
             { title: 'จังหวัด', data: 'province' },
             { title: 'หมายเหตุ', data: 'note' },
-            { title: 'คน (ก่อน)', data: 'participants_before' },
-            { title: 'คน (จริง)', data: 'participants_after' },
-            { title: 'ห้อง', data: null, render: (data) => data.use_room ? data.participants_after : '-' },
+            { title: 'คน (ลงทะเบียน)', data: 'participants_before' },
+            { title: 'คน (มาจริง)', data: 'participants_after' },
+            { title: 'จองห้องพัก', data: 'reserve_room', render: (data) => data > 0 ? data : 0 },
+            { title: 'จอง 40', data: 'tire_40_before' },
+            { title: 'จอง 80', data: 'tire_80_before' },
+            { title: 'จอง 120', data: 'tire_120_before' },
+            { title: 'จอง 200', data: 'tire_200_before' },
+            { title: 'จอง 300', data: 'tire_300_before' },
+            { title: 'จอง 600', data: 'tire_600_before' },
+            { title: 'จองจริง', data: null, render: (data) => {
+                return (parseInt(data.tire_40_after) || 0) + (parseInt(data.tire_80_after) || 0) + 
+                       (parseInt(data.tire_120_after) || 0) + (parseInt(data.tire_200_after) || 0) + 
+                       (parseInt(data.tire_300_after) || 0) + (parseInt(data.tire_600_after) || 0);
+            }},
+            { title: 'จัดการ', data: 'id', render: (data) => `
+                <button class="btn btn-sm btn-warning" onclick="editItem(${data})">แก้ไข</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">ลบ</button>
+            `}
+        ];
+
+        const userColumns = [
+            { title: 'ลำดับ', data: 'total_no' },
+            { title: 'เซลส์', data: 'sales_name' },
+            { title: 'ลำดับในเซลส์', data: 'order_no' },
+            { title: 'รายชื่อ', data: 'shop_name' },
+            { title: 'ประเภท', data: 'type', render: (data) => data === 'user' ? '👤 ผู้ใช้' : '🏪 ร้านค้า' },
+            { title: 'จังหวัด', data: 'province' },
+            { title: 'หมายเหตุ', data: 'note' },
+            { title: 'คน (ลงทะเบียน)', data: 'participants_before' },
+            { title: 'คน (มาจริง)', data: 'participants_after' },
             { title: 'จอง 40', data: 'tire_40_before' },
             { title: 'จอง 80', data: 'tire_80_before' },
             { title: 'จอง 120', data: 'tire_120_before' },
@@ -478,13 +504,13 @@
 
             tableShop = $('#dataTableShop').DataTable({
                 ...commonOptions,
-                columns: tableColumns,
+                columns: shopColumns,
                 order: [[0, 'asc']]
             });
 
             tableUser = $('#dataTableUser').DataTable({
                 ...commonOptions,
-                columns: tableColumns,
+                columns: userColumns,
                 order: [[0, 'asc']]
             });
         }

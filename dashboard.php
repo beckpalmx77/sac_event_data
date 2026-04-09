@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard สรุปสถิติ</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
@@ -31,7 +32,6 @@
     <div class="container-fluid py-3 px-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>📊 Dashboard สรุปสถิติ</h2>
-            <a href="index.php" class="btn btn-outline-primary">← กลับหน้าบันทึก</a>
         </div>
 
         <ul class="nav nav-tabs mb-3" id="dashTab" role="tablist">
@@ -55,8 +55,10 @@
         </div>
 
         <div class="chart-container">
-            <h5 class="mb-3">📋 รายละเอียดตามเซลส์</h5>
-            <table class="table table-bordered table-hover" id="salesTable" style="width:100%"></table>
+            <h5 class="mb-3" id="salesTableTitle">📋 รายละเอียดตามเซลส์</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="salesTable" style="width:100%"></table>
+            </div>
         </div>
     </div>
 
@@ -68,9 +70,17 @@
         let eventId = 0;
         let allData = [];
         let salesTable;
+        let currentType = 'shop';
 
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
+        });
+
+        document.querySelectorAll('#dashTab button').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', function(e) {
+                currentType = e.target.dataset.bsTarget.replace('#', '');
+                initSalesTable(currentType === 'shop' ? allData.filter(d => d.type === 'shop') : allData.filter(d => d.type === 'user'));
+            });
         });
 
         function loadData() {
@@ -88,7 +98,7 @@
             fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_dashboard_summary&event_id=' + eventId + '&type=' + type })
             .then(res => res.json())
             .then(data => {
-                renderStats(type, data);
+                renderStats(type.charAt(0).toUpperCase() + type.slice(1), data);
             });
         }
 
@@ -97,11 +107,11 @@
             .then(res => res.json())
             .then(data => {
                 allData = data;
-                initSalesTable(data);
-                loadSalesProvinceList('Shop', data.filter(d => d.type === 'shop'));
-                loadSalesProvinceList('User', data.filter(d => d.type === 'user'));
-                loadTireBySizeTable('Shop', data.filter(d => d.type === 'shop'));
-                loadTireBySizeTable('User', data.filter(d => d.type === 'user'));
+                initSalesTable(data.filter(d => d.type === currentType));
+                loadSalesProvinceList('shop', data.filter(d => d.type === 'shop'));
+                loadSalesProvinceList('user', data.filter(d => d.type === 'user'));
+                loadTireBySizeTable('shop', data.filter(d => d.type === 'shop'));
+                loadTireBySizeTable('user', data.filter(d => d.type === 'user'));
             });
         }
 
@@ -114,51 +124,72 @@
             const totalShops = parseInt(data.total_shops) || 0;
             const totalPartBefore = parseInt(data.total_participants_before) || 0;
             const totalPartAfter = parseInt(data.total_participants_after) || 0;
-            const tireBefore = parseInt(data.total_tire_40_before) + parseInt(data.total_tire_80_before) + 
-                              parseInt(data.total_tire_120_before) + parseInt(data.total_tire_200_before) + 
-                              parseInt(data.total_tire_300_before) + parseInt(data.total_tire_600_before);
-            const tireAfter = parseInt(data.total_tire_40_after) + parseInt(data.total_tire_80_after) + 
-                              parseInt(data.total_tire_120_after) + parseInt(data.total_tire_200_after) + 
-                              parseInt(data.total_tire_300_after) + parseInt(data.total_tire_600_after);
+            const tireBefore = parseInt(data['total_tire_40_before']) + parseInt(data['total_tire_80_before']) + 
+                              parseInt(data['total_tire_120_before']) + parseInt(data['total_tire_200_before']) + 
+                              parseInt(data['total_tire_300_before']) + parseInt(data['total_tire_600_before']);
+            const tireAfter = parseInt(data['total_tire_40_after']) + parseInt(data['total_tire_80_after']) + 
+                              parseInt(data['total_tire_120_after']) + parseInt(data['total_tire_200_after']) + 
+                              parseInt(data['total_tire_300_after']) + parseInt(data['total_tire_600_after']);
 
             const shopsCame = parseInt(data.shops_came) || 0;
-            const shopsNotCame = parseInt(data.shops_not_came) || 0;
-            const shopsBookedTire = parseInt(data.shops_booked_tire) || 0;
-            const shopsBookedTireCame = parseInt(data.shops_booked_tire_came) || 0;
-            const shopsBookedTireNotCame = shopsBookedTire - shopsBookedTireCame;
-            const shopsNoTireCame = parseInt(data.shops_no_tire_came) || 0;
-
+            const shopsNotCame = totalShops - shopsCame;
             const partsNotCame = totalPartBefore - totalPartAfter;
 
             const summaryHTML = `
-                <div class="col-12">
+                <div class="col-12 mb-4">
                     <div class="chart-container">
                         <h5 class="mb-3">📊 สรุป${type === 'Shop' ? 'ร้านค้า' : 'ผู้ใช้'}</h5>
                         <table class="table table-bordered table-striped table-sm">
                             <thead class="table-dark">
                                 <tr>
                                     <th>รายละเอียด</th>
-                                    <th class="text-center">จำนวน</th>
-                                    <th class="text-center">ร้อยละ</th>
+                                    <th class="text-center">ลงทะเบียน</th>
+                                    <th class="text-center">มาร่วมงาน</th>
+                                    <th class="text-center">ไม่มาร่วมงาน</th>
+                                    <th class="text-center">% มาร่วมงาน</th>
+                                    <th class="text-center">% ไม่มาร่วมงาน</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="table-secondary"><td colspan="3"><strong>📋 ข้อมูลลงทะเบียน</strong></td></tr>
-                                <tr><td>ร้านค้าที่ลงทะเบียน</td><td class="text-center">${totalShops.toLocaleString()}</td><td class="text-center">100%</td></tr>
-                                <tr><td>จำนวนคนที่ลงทะเบียน</td><td class="text-center">${totalPartBefore.toLocaleString()}</td><td class="text-center">100%</td></tr>
-                                <tr class="table-success"><td colspan="3"><strong>✅ มาร่วมงาน</strong></td></tr>
-                                <tr><td>ร้านค้าที่มาร่วมงานจริง</td><td class="text-center">${shopsCame.toLocaleString()}</td><td class="text-center">${totalShops > 0 ? Math.round(shopsCame/totalShops*100) : 0}%</td></tr>
-                                <tr><td>จำนวนคนที่มาร่วมงานจริง</td><td class="text-center">${totalPartAfter.toLocaleString()}</td><td class="text-center">${totalPartBefore > 0 ? Math.round(totalPartAfter/totalPartBefore*100) : 0}%</td></tr>
-                                <tr class="table-danger"><td colspan="3"><strong>❌ ไม่มาร่วมงาน</strong></td></tr>
-                                <tr><td>ร้านค้าที่ไม่มาร่วมงาน</td><td class="text-center">${shopsNotCame.toLocaleString()}</td><td class="text-center">${totalShops > 0 ? Math.round(shopsNotCame/totalShops*100) : 0}%</td></tr>
-                                <tr><td>จำนวนคนที่ไม่ร่วมงาน</td><td class="text-center">${partsNotCame.toLocaleString()}</td><td class="text-center">${totalPartBefore > 0 ? Math.round(partsNotCame/totalPartBefore*100) : 0}%</td></tr>
-                                <tr class="table-warning"><td colspan="3"><strong>🛞 ข้อมูลยาง</strong></td></tr>
-                                <tr><td>ยางที่จองก่อน</td><td class="text-center">${tireBefore.toLocaleString()}</td><td class="text-center">100%</td></tr>
-                                <tr><td>ยางที่มาจริง</td><td class="text-center">${tireAfter.toLocaleString()}</td><td class="text-center">${tireBefore > 0 ? Math.round(tireAfter/tireBefore*100) : 0}%</td></tr>
-                                <tr class="table-info"><td colspan="3"><strong>🏪 ข้อมูลการจองยาง</strong></td></tr>
-                                <tr><td>ร้านค้าที่จองยางแล้วมาร่วมงาน</td><td class="text-center">${shopsBookedTireCame.toLocaleString()}</td><td class="text-center">${shopsBookedTire > 0 ? Math.round(shopsBookedTireCame/shopsBookedTire*100) : 0}%</td></tr>
-                                <tr><td>ร้านค้าที่จองยางแล้วไม่ร่วมงาน</td><td class="text-center">${shopsBookedTireNotCame.toLocaleString()}</td><td class="text-center">${shopsBookedTire > 0 ? Math.round(shopsBookedTireNotCame/shopsBookedTire*100) : 0}%</td></tr>
-                                <tr><td>ร้านค้าที่ไม่จองยางแล้วมาร่วมงาน</td><td class="text-center">${shopsNoTireCame.toLocaleString()}</td><td class="text-center">100%</td></tr>
+                                <tr>
+                                    <td>${type === 'Shop' ? 'ร้านค้า' : 'ผู้ใช้'}</td>
+                                    <td class="text-center">${totalShops.toLocaleString()}</td>
+                                    <td class="text-center">${shopsCame.toLocaleString()}</td>
+                                    <td class="text-center">${shopsNotCame.toLocaleString()}</td>
+                                    <td class="text-center">${totalShops > 0 ? Math.round(shopsCame/totalShops*100) : 0}%</td>
+                                    <td class="text-center">${totalShops > 0 ? Math.round(shopsNotCame/totalShops*100) : 0}%</td>
+                                </tr>
+                                <tr>
+                                    <td>จำนวนคน</td>
+                                    <td class="text-center">${totalPartBefore.toLocaleString()}</td>
+                                    <td class="text-center">${totalPartAfter.toLocaleString()}</td>
+                                    <td class="text-center">${partsNotCame.toLocaleString()}</td>
+                                    <td class="text-center">${totalPartBefore > 0 ? Math.round(totalPartAfter/totalPartBefore*100) : 0}%</td>
+                                    <td class="text-center">${totalPartBefore > 0 ? Math.round(partsNotCame/totalPartBefore*100) : 0}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="chart-container">
+                        <h5 class="mb-3">🛞 ข้อมูลยาง</h5>
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ขนาด</th>
+                                    <th class="text-center">จองจอง</th>
+                                    <th class="text-center">จองจริง</th>
+                                    <th class="text-center">% จองจริง</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>รวม</td><td class="text-center">${tireBefore.toLocaleString()}</td><td class="text-center">${tireAfter.toLocaleString()}</td><td class="text-center">${tireBefore > 0 ? Math.round(tireAfter/tireBefore*100) : 0}%</td></tr>
+                                ${[40, 80, 120, 200, 300, 600].map(s => {
+                                    const before = parseInt(data['total_tire_'+s+'_before']) || 0;
+                                    const after = parseInt(data['total_tire_'+s+'_after']) || 0;
+                                    return `<tr><td>${s}</td><td class="text-center">${before}</td><td class="text-center">${after}</td><td class="text-center">${before > 0 ? Math.round(after/before*100) : 0}%</td></tr>`;
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -188,14 +219,15 @@
             tireRows += `<tr class="table-dark fw-bold"><td>รวม</td><td>${tireBefore}</td><td>${tireAfter}</td><td>${tirePct}%</td></tr>`;
 
             const tireHTML = `
-                <div class="col-lg-4 mb-4">
+                <div class="col-lg-6 mb-4">
                     <div class="chart-container">
-                        <h5 class="mb-3">🔢 การจองยางแต่ละขนาด</h5>
-                        <table class="table table-bordered table-sm"><thead><tr><th>ขนาด</th><th>จองก่อน</th><th>มาจริง</th><th>%</th></tr></thead><tbody>${tireRows}</tbody></table>
+                        <h5 class="mb-3">🔢 การจองยาง</h5>
+                        <table class="table table-bordered table-sm"><thead><tr><th>จำนวน</th><th>จองจอง</th><th>มาจริง</th><th>% จองจริง</th></tr></thead><tbody>${tireRows}</tbody></table>
                     </div>
                 </div>
             `;
-            document.getElementById('tire' + type).innerHTML = tireHTML;
+            const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
+            document.getElementById('tire' + typeCapitalized).innerHTML = tireHTML;
         }
 
         function loadSalesProvinceList(type, data) {
@@ -229,31 +261,101 @@
         }
 
         function initSalesTable(data) {
+            const typeLabel = currentType === 'shop' ? '(ร้านค้า)' : '(ผู้ใช้)';
+            document.getElementById('salesTableTitle').textContent = '📋 รายละเอียดตามเซลส์ ' + typeLabel;
+            
+            const tireSizes = [40, 80, 120, 200, 300, 600];
             const stats = {};
             data.forEach(i => {
                 const s = i.sales_name || 'ไม่ระบุ';
-                if (!stats[s]) stats[s] = { count: 0, participants: 0, useRoom: 0, tire: 0 };
-                stats[s].count++;
-                stats[s].participants += parseInt(i.participants_after) || 0;
-                if (i.type === 'shop') {
-                    stats[s].useRoom += i.use_room == 1 ? 1 : 0;
+                if (!stats[s]) {
+                    stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, tire_before: 0, tire_after: 0 };
+                    tireSizes.forEach(size => {
+                        stats[s]['tire_'+size+'_before'] = 0;
+                        stats[s]['tire_'+size+'_after'] = 0;
+                    });
                 }
-                stats[s].tire += (parseInt(i.tire_40_after)||0) + (parseInt(i.tire_80_after)||0) + (parseInt(i.tire_120_after)||0) + (parseInt(i.tire_200_after)||0) + (parseInt(i.tire_300_after)||0) + (parseInt(i.tire_600_after)||0);
+                stats[s].count++;
+                if ((parseInt(i.participants_after) || 0) > 0) {
+                    stats[s].came++;
+                } else {
+                    stats[s].not_came++;
+                }
+                stats[s].participants += parseInt(i.participants_before) || 0;
+                stats[s].participants_after += parseInt(i.participants_after) || 0;
+                stats[s].reserveRoom += parseInt(i.reserve_room) || 0;
+                stats[s].usedRoom += parseInt(i.used_room) || 0;
+                stats[s].tire_before += (parseInt(i.tire_40_before)||0) + (parseInt(i.tire_80_before)||0) + (parseInt(i.tire_120_before)||0) + (parseInt(i.tire_200_before)||0) + (parseInt(i.tire_300_before)||0) + (parseInt(i.tire_600_before)||0);
+                stats[s].tire_after += (parseInt(i.tire_40_after)||0) + (parseInt(i.tire_80_after)||0) + (parseInt(i.tire_120_after)||0) + (parseInt(i.tire_200_after)||0) + (parseInt(i.tire_300_after)||0) + (parseInt(i.tire_600_after)||0);
+                tireSizes.forEach(size => {
+                    stats[s]['tire_'+size+'_before'] += parseInt(i['tire_'+size+'_before']) || 0;
+                    stats[s]['tire_'+size+'_after'] += parseInt(i['tire_'+size+'_after']) || 0;
+                });
+            });
+
+            const totalCount = Object.values(stats).reduce((sum, s) => sum + s.count, 0);
+            const totalCame = Object.values(stats).reduce((sum, s) => sum + s.came, 0);
+            const totalNotCame = Object.values(stats).reduce((sum, s) => sum + s.not_came, 0);
+            const totalParticipants = Object.values(stats).reduce((sum, s) => sum + s.participants, 0);
+            const totalParticipantsAfter = Object.values(stats).reduce((sum, s) => sum + s.participants_after, 0);
+            const totalReserveRoom = Object.values(stats).reduce((sum, s) => sum + s.reserveRoom, 0);
+            const totalUsedRoom = Object.values(stats).reduce((sum, s) => sum + s.usedRoom, 0);
+            const totalTireBefore = Object.values(stats).reduce((sum, s) => sum + s.tire_before, 0);
+            const totalTireAfter = Object.values(stats).reduce((sum, s) => sum + s.tire_after, 0);
+
+            const totals = {
+                sales: '<strong>รวม</strong>',
+                count: totalCount,
+                came: totalCame,
+                not_came: totalNotCame,
+                participants: totalParticipants,
+                participants_after: totalParticipantsAfter,
+                reserveRoom: totalReserveRoom,
+                usedRoom: totalUsedRoom,
+                tire_before: totalTireBefore,
+                tire_after: totalTireAfter
+            };
+            tireSizes.forEach(size => {
+                totals['tire_'+size+'_before'] = Object.values(stats).reduce((sum, s) => sum + s['tire_'+size+'_before'], 0);
+                totals['tire_'+size+'_after'] = Object.values(stats).reduce((sum, s) => sum + s['tire_'+size+'_after'], 0);
+            });
+
+            const tableData = Object.entries(stats).map(([name, s]) => ({ sales: name, ...s }));
+            tableData.push(totals);
+
+            const columns = [
+                { title: 'เซลส์', data: 'sales' },
+                { title: 'จำนวนร้านลงทะเบียน', data: 'count' },
+                { title: 'ร้านมาร่วมงาน', data: 'came' },
+                { title: 'ไม่มา', data: 'not_came' },
+                { title: 'จำนวนคน(ลงทะเบียน)', data: 'participants' },
+                { title: 'คน(มาร่วมงาน)', data: 'participants_after' },
+                { title: 'จองห้อง', data: 'reserveRoom' },
+                { title: 'เข้าพักจริง', data: 'usedRoom' },
+                { title: 'ยาง(จอง)', data: 'tire_before' },
+                { title: 'ยาง-จริง', data: 'tire_after' }
+            ];
+            
+            tireSizes.forEach(size => {
+                columns.push({ title: size+'จอง', data: 'tire_'+size+'_before' });
+                columns.push({ title: size+'จริง', data: 'tire_'+size+'_after' });
             });
 
             if (salesTable) salesTable.destroy();
             salesTable = $('#salesTable').DataTable({
                 language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' },
-                lengthMenu: [[5, 10, 20, 100, -1], [5, 10, 20, 100, 'ทั้งหมด']],
-                pageLength: 5,
-                data: Object.entries(stats).map(([name, s]) => ({ sales: name, ...s })),
-                columns: [
-                    { title: 'เซลส์', data: 'sales' },
-                    { title: 'จำนวนร้าน', data: 'count' },
-                    { title: 'จำนวนคน', data: 'participants' },
-                    { title: 'ใช้ห้อง', data: 'useRoom' },
-                    { title: 'รวมยาง (แพค)', data: 'tire' }
-                ]
+                lengthMenu: [[10, 20, 100, -1], [10, 20, 100, 'ทั้งหมด']],
+                pageLength: 10,
+                data: tableData,
+                ordering: false,
+                scrollX: true,
+                autoWidth: false,
+                columns: columns,
+                rowCallback: function(row, data, index) {
+                    if (data.sales.includes('รวม')) {
+                        $(row).addClass('table-dark fw-bold');
+                    }
+                }
             });
         }
     </script>
