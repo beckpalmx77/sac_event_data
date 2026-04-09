@@ -180,12 +180,12 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="chart-container">
-                        <h5 class="mb-3">🛞 ข้อมูลยาง</h5>
+                        <h5 class="mb-3">🛞 ข้อมูลยาง ${type === 'Shop' ? 'ร้านค้า' : 'ผู้ใช้'} </h5>
                         <table class="table table-bordered table-striped table-sm">
                             <thead class="table-dark">
                                 <tr>
                                     <th>ขนาด</th>
-                                    <th class="text-center">จองจอง</th>
+                                    <th class="text-center">ลงทะเบียนจอง</th>
                                     <th class="text-center">จองจริง</th>
                                     <th class="text-center">% จองจริง</th>
                                 </tr>
@@ -335,7 +335,7 @@ if (!isset($_SESSION['user_id'])) {
                 { title: 'จำนวนร้านลงทะเบียน', data: 'count' },
                 { title: 'ร้านมาร่วมงาน', data: 'came' },
                 { title: 'ไม่มา', data: 'not_came' },
-                { title: 'จำนวนคน(ลงทะเบียน)', data: 'participants' },
+                { title: 'คน(ลงทะเบียน)', data: 'participants' },
                 { title: 'คน(มาร่วมงาน)', data: 'participants_after' },
                 { title: 'จองห้อง', data: 'reserveRoom' },
                 { title: 'เข้าพักจริง', data: 'usedRoom' },
