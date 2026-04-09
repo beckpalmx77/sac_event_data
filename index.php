@@ -81,6 +81,14 @@
                 <div class="number" id="totalTireShop">0</div>
                 <div class="label">จองยาง</div>
             </div>
+            <div class="col-md-2 col-6 summary-item">
+                <div class="number" id="totalTireRealShop">0</div>
+                <div class="label">จองจริง</div>
+            </div>
+            <div class="col-md-2 col-6 summary-item">
+                <div class="number" id="totalTirePercentShop">0%</div>
+                <div class="label">% จองจริง</div>
+            </div>
         </div>
         <div class="row summary-card" id="summarySectionUser">
             <div class="col-12 mb-2"><strong>👤 ผู้ใช้</strong></div>
@@ -111,6 +119,14 @@
             <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTireUser">0</div>
                 <div class="label">จองยาง</div>
+            </div>
+            <div class="col-md-2 col-6 summary-item">
+                <div class="number" id="totalTireRealUser">0</div>
+                <div class="label">จองจริง</div>
+            </div>
+            <div class="col-md-2 col-6 summary-item">
+                <div class="number" id="totalTirePercentUser">0%</div>
+                <div class="label">% จองจริง</div>
             </div>
         </div>
 
@@ -598,14 +614,28 @@
                 document.getElementById('totalPercentShop').textContent = shopPct + '%';
                 document.getElementById('totalPercentUser').textContent = userPct + '%';
                 
-                const shopTire = (parseInt(shopData.total_tire_40_before) || 0) + (parseInt(shopData.total_tire_80_before) || 0) + 
-                               (parseInt(shopData.total_tire_120_before) || 0) + (parseInt(shopData.total_tire_200_before) || 0) + 
-                               (parseInt(shopData.total_tire_300_before) || 0) + (parseInt(shopData.total_tire_600_before) || 0);
-                const userTire = (parseInt(userData.total_tire_40_before) || 0) + (parseInt(userData.total_tire_80_before) || 0) + 
-                               (parseInt(userData.total_tire_120_before) || 0) + (parseInt(userData.total_tire_200_before) || 0) + 
-                               (parseInt(userData.total_tire_300_before) || 0) + (parseInt(userData.total_tire_600_before) || 0);
+                const shopTire = (parseInt(shopData['total_tire_40_before']) || 0) + (parseInt(shopData['total_tire_80_before']) || 0) + 
+                               (parseInt(shopData['total_tire_120_before']) || 0) + (parseInt(shopData['total_tire_200_before']) || 0) + 
+                               (parseInt(shopData['total_tire_300_before']) || 0) + (parseInt(shopData['total_tire_600_before']) || 0);
+                const userTire = (parseInt(userData['total_tire_40_before']) || 0) + (parseInt(userData['total_tire_80_before']) || 0) + 
+                               (parseInt(userData['total_tire_120_before']) || 0) + (parseInt(userData['total_tire_200_before']) || 0) + 
+                               (parseInt(userData['total_tire_300_before']) || 0) + (parseInt(userData['total_tire_600_before']) || 0);
                 document.getElementById('totalTireShop').textContent = shopTire;
                 document.getElementById('totalTireUser').textContent = userTire;
+
+                const shopTireReal = (parseInt(shopData['total_tire_40_after']) || 0) + (parseInt(shopData['total_tire_80_after']) || 0) + 
+                                    (parseInt(shopData['total_tire_120_after']) || 0) + (parseInt(shopData['total_tire_200_after']) || 0) + 
+                                    (parseInt(shopData['total_tire_300_after']) || 0) + (parseInt(shopData['total_tire_600_after']) || 0);
+                const userTireReal = (parseInt(userData['total_tire_40_after']) || 0) + (parseInt(userData['total_tire_80_after']) || 0) + 
+                                    (parseInt(userData['total_tire_120_after']) || 0) + (parseInt(userData['total_tire_200_after']) || 0) + 
+                                    (parseInt(userData['total_tire_300_after']) || 0) + (parseInt(userData['total_tire_600_after']) || 0);
+                document.getElementById('totalTireRealShop').textContent = shopTireReal;
+                document.getElementById('totalTireRealUser').textContent = userTireReal;
+
+                const shopTirePct = shopTire > 0 ? Math.round(shopTireReal / shopTire * 100) : 0;
+                const userTirePct = userTire > 0 ? Math.round(userTireReal / userTire * 100) : 0;
+                document.getElementById('totalTirePercentShop').textContent = shopTirePct + '%';
+                document.getElementById('totalTirePercentUser').textContent = userTirePct + '%';
             });
         }
 
