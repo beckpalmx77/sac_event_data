@@ -70,17 +70,31 @@ function getEvent() {
 function getLastOrder() {
     global $conn;
     $event_id = $_POST['event_id'] ?? 0;
+    $sales_name = $_POST['sales_name'] ?? '';
+    $type = $_POST['type'] ?? 'shop';
     
     $stmt = $conn->prepare("
-        SELECT sales_name, order_no, total_no 
+        SELECT order_no, total_no 
         FROM attendees 
-        WHERE event_id = ? 
+        WHERE event_id = ? AND sales_name = ? AND type = ?
         ORDER BY id DESC LIMIT 1
     ");
-    $stmt->execute([$event_id]);
+    $stmt->execute([$event_id, $sales_name, $type]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    echo json_encode($result ?: ['sales_name' => '', 'order_no' => 0, 'total_no' => 0]);
+    $order_no = $result ? $result['order_no'] : 0;
+    
+    $stmt2 = $conn->prepare("
+        SELECT total_no 
+        FROM attendees 
+        WHERE event_id = ? AND type = ?
+        ORDER BY id DESC LIMIT 1
+    ");
+    $stmt2->execute([$event_id, $type]);
+    $result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
+    $total_no = $result2 ? $result2['total_no'] : 0;
+    
+    echo json_encode(['order_no' => $order_no, 'total_no' => $total_no]);
 }
 
 function addAttendee() {
