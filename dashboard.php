@@ -141,6 +141,10 @@ if (!isset($_SESSION['user_id'])) {
         const shopsCame = parseInt(data.shops_came) || 0;
         const shopsNotCame = totalShops - shopsCame;
         const partsNotCame = totalPartBefore - totalPartAfter;
+        
+        const roomAtt = parseInt(data.total_room_att) || 0;
+        const shipAtt = parseInt(data.total_ship_att) || 0;
+        const nightAttend = parseInt(data.total_night_att) || 0;
 
         const summaryHTML = `
                 <div class="col-12 mb-4">
@@ -173,6 +177,18 @@ if (!isset($_SESSION['user_id'])) {
                                     <td class="text-center">${partsNotCame.toLocaleString()}</td>
                                     <td class="text-center">${totalPartBefore > 0 ? Math.round(totalPartAfter/totalPartBefore*100) : 0}%</td>
                                     <td class="text-center">${totalPartBefore > 0 ? Math.round(partsNotCame/totalPartBefore*100) : 0}%</td>
+                                </tr>
+                                <tr>
+                                    <td>จำนวนห้องพัก (room_att)</td>
+                                    <td class="text-center" colspan="5">${roomAtt.toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <td>จำนวนล่องเรือ (ship_att)</td>
+                                    <td class="text-center" colspan="5">${shipAtt.toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <td>จำนวนงานเลี้ยงเย็น (night_attend)</td>
+                                    <td class="text-center" colspan="5">${nightAttend.toLocaleString()}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -276,7 +292,7 @@ if (!isset($_SESSION['user_id'])) {
         data.forEach(i => {
             const s = i.sales_name || 'ไม่ระบุ';
             if (!stats[s]) {
-                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, tire_before: 0, tire_after: 0 };
+                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, room_att: 0, ship_att: 0, night_att: 0, tire_before: 0, tire_after: 0 };
                 tireSizes.forEach(size => {
                     stats[s]['tire_'+size+'_before'] = 0;
                     stats[s]['tire_'+size+'_after'] = 0;
@@ -292,6 +308,9 @@ if (!isset($_SESSION['user_id'])) {
             stats[s].participants_after += parseInt(i.participants_after) || 0;
             stats[s].reserveRoom += parseInt(i.reserve_room) || 0;
             stats[s].usedRoom += parseInt(i.used_room) || 0;
+            stats[s].room_att += parseInt(i.room_att) || 0;
+            stats[s].ship_att += parseInt(i.ship_att) || 0;
+            stats[s].night_att += parseInt(i.night_att) || 0;
             stats[s].tire_before += (parseInt(i.tire_40_before)||0) + (parseInt(i.tire_80_before)||0) + (parseInt(i.tire_120_before)||0) + (parseInt(i.tire_200_before)||0) + (parseInt(i.tire_300_before)||0) + (parseInt(i.tire_600_before)||0);
             stats[s].tire_after += (parseInt(i.tire_40_after)||0) + (parseInt(i.tire_80_after)||0) + (parseInt(i.tire_120_after)||0) + (parseInt(i.tire_200_after)||0) + (parseInt(i.tire_300_after)||0) + (parseInt(i.tire_600_after)||0);
             tireSizes.forEach(size => {
@@ -307,6 +326,9 @@ if (!isset($_SESSION['user_id'])) {
         const totalParticipantsAfter = Object.values(stats).reduce((sum, s) => sum + s.participants_after, 0);
         const totalReserveRoom = Object.values(stats).reduce((sum, s) => sum + s.reserveRoom, 0);
         const totalUsedRoom = Object.values(stats).reduce((sum, s) => sum + s.usedRoom, 0);
+        const totalRoomAtt = Object.values(stats).reduce((sum, s) => sum + s.room_att, 0);
+        const totalShipAtt = Object.values(stats).reduce((sum, s) => sum + s.ship_att, 0);
+        const totalNightAtt = Object.values(stats).reduce((sum, s) => sum + s.night_att, 0);
         const totalTireBefore = Object.values(stats).reduce((sum, s) => sum + s.tire_before, 0);
         const totalTireAfter = Object.values(stats).reduce((sum, s) => sum + s.tire_after, 0);
 
@@ -319,6 +341,9 @@ if (!isset($_SESSION['user_id'])) {
             participants_after: totalParticipantsAfter,
             reserveRoom: totalReserveRoom,
             usedRoom: totalUsedRoom,
+            room_att: totalRoomAtt,
+            ship_att: totalShipAtt,
+            night_att: totalNightAtt,
             tire_before: totalTireBefore,
             tire_after: totalTireAfter
         };
@@ -347,6 +372,10 @@ if (!isset($_SESSION['user_id'])) {
             columns.push({ title: size+'จอง', data: 'tire_'+size+'_before' });
             columns.push({ title: size+'จริง', data: 'tire_'+size+'_after' });
         });
+        
+        columns.push({ title: 'ห้องพัก', data: 'room_att' });
+        columns.push({ title: 'ล่องเรือ', data: 'ship_att' });
+        columns.push({ title: 'งานเลี้ยงเย็น', data: 'night_att' });
 
         if (salesTable) salesTable.destroy();
         salesTable = $('#salesTable').DataTable({

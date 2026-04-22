@@ -149,6 +149,15 @@ if (!isset($_SESSION['user_id'])) {
         <button class="btn btn-primary btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="openModal()">
             + เพิ่มรายการ
         </button>
+        <button class="btn btn-success btn-lg mb-3 ms-2" onclick="exportCSV('shop')">
+            📥 Export ร้านค้า
+        </button>
+        <button class="btn btn-success btn-lg mb-3 ms-2" onclick="exportCSV('user')">
+            📥 Export ผู้ใช้
+        </button>
+        <button class="btn btn-warning btn-lg mb-3 ms-2" onclick="window.open('export_excel.php?event_id=' + eventId, '_blank')">
+            📊 Export Excel
+        </button>
 
         <ul class="nav nav-tabs mb-3" id="dataTab" role="tablist">
             <li class="nav-item" role="presentation">
@@ -172,9 +181,10 @@ if (!isset($_SESSION['user_id'])) {
                                 <th>ประเภท</th>
                                 <th>จังหวัด</th>
                                 <th>หมายเหตุ</th>
-                                <th>คน (ก่อน)</th>
+<th>คน (ก่อน)</th>
                                 <th>คน (จริง)</th>
-                                <th>ห้อง</th>
+                                <th>จองห้องพัก</th>
+                                <th>ใช้ห้องจริง</th>
                                 <th>จอง 40</th>
                                 <th>จอง 80</th>
                                 <th>จอง 120</th>
@@ -182,7 +192,11 @@ if (!isset($_SESSION['user_id'])) {
                                 <th>จอง 300</th>
                                 <th>จอง 600</th>
                                 <th>จองจริง</th>
-                                <th>จัดการ</th>
+                                <th>ห้องพัก</th>
+                                <th>ล่องเรือ</th>
+                                <th>งานเลี้ยงเย็น</th>
+                                <th>แก้ไข</th>
+                                <th>ลบ</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -210,7 +224,11 @@ if (!isset($_SESSION['user_id'])) {
                                 <th>จอง 300</th>
                                 <th>จอง 600</th>
                                 <th>จองจริง</th>
-                                <th>จัดการ</th>
+                                <th>ห้องพัก</th>
+                                <th>ล่องเรือ</th>
+                                <th>งานเลี้ยงเย็น</th>
+                                <th>แก้ไข</th>
+                                <th>ลบ</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -320,6 +338,21 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                             </div>
                         </div>
+                        <h6 class="mb-2">ข้อมูลกิจกรรม</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนห้องพัก (room_att)</label>
+                                <input type="number" class="form-control" id="room_att" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนล่องเรือ (ship_att)</label>
+                                <input type="number" class="form-control" id="ship_att" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนงานเลี้ยงเย็น (night_attend)</label>
+                                <input type="number" class="form-control" id="night_attend" value="0" min="0">
+                            </div>
+                        </div>
                         <h6 class="mb-2">จำนวนจองจอง (แพค) - สำรวจก่อน</h6>
                         <div class="row mb-3">
                             <div class="col">
@@ -401,9 +434,10 @@ if (!isset($_SESSION['user_id'])) {
             { title: 'ประเภท', data: 'type', render: (data) => data === 'user' ? '👤 ผู้ใช้' : '🏪 ร้านค้า' },
             { title: 'จังหวัด', data: 'province' },
             { title: 'หมายเหตุ', data: 'note' },
-            { title: 'คน (ลงทะเบียน)', data: 'participants_before' },
-            { title: 'คน (มาจริง)', data: 'participants_after' },
-            { title: 'จองห้องพัก', data: 'reserve_room', render: (data) => data > 0 ? data : 0 },
+            { title: 'คน (ก่อน)', data: 'participants_before' },
+            { title: 'คน (จริง)', data: 'participants_after' },
+            { title: 'จองห้องพัก', data: 'reserve_room', render: (data) => data > 0 ? data : '' },
+            { title: 'ใช้ห้องจริง', data: 'used_room', render: (data) => data > 0 ? data : '' },
             { title: 'จอง 40', data: 'tire_40_before' },
             { title: 'จอง 80', data: 'tire_80_before' },
             { title: 'จอง 120', data: 'tire_120_before' },
@@ -415,10 +449,11 @@ if (!isset($_SESSION['user_id'])) {
                        (parseInt(data.tire_120_after) || 0) + (parseInt(data.tire_200_after) || 0) + 
                        (parseInt(data.tire_300_after) || 0) + (parseInt(data.tire_600_after) || 0);
             }},
-            { title: 'จัดการ', data: 'id', render: (data) => `
-                <button class="btn btn-sm btn-warning" onclick="editItem(${data})">แก้ไข</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">ลบ</button>
-            `}
+            { title: 'ห้องพัก', data: 'room_att', render: (data) => data > 0 ? data : '' },
+            { title: 'ล่องเรือ', data: 'ship_att', render: (data) => data > 0 ? data : '' },
+            { title: 'งานเลี้ยงเย็น', data: 'night_att', render: (data) => data > 0 ? data : '' },
+            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-warning" onclick="editItem(${data})">✏️</button>` },
+            { title: 'ลบ', data: 'id', render: (data) => `<button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">🗑️</button>` }
         ];
 
         const userColumns = [
@@ -442,10 +477,11 @@ if (!isset($_SESSION['user_id'])) {
                        (parseInt(data.tire_120_after) || 0) + (parseInt(data.tire_200_after) || 0) + 
                        (parseInt(data.tire_300_after) || 0) + (parseInt(data.tire_600_after) || 0);
             }},
-            { title: 'จัดการ', data: 'id', render: (data) => `
-                <button class="btn btn-sm btn-warning" onclick="editItem(${data})">แก้ไข</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">ลบ</button>
-            `}
+            { title: 'ห้องพัก', data: 'room_att', render: (data) => data > 0 ? data : '' },
+            { title: 'ล่องเรือ', data: 'ship_att', render: (data) => data > 0 ? data : '' },
+            { title: 'งานเลี้ยงเย็น', data: 'night_att', render: (data) => data > 0 ? data : '' },
+            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-warning" onclick="editItem(${data})">✏️</button>` },
+            { title: 'ลบ', data: 'id', render: (data) => `<button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">🗑️</button>` }
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -722,6 +758,9 @@ if (!isset($_SESSION['user_id'])) {
                     document.getElementById('tire_300_after').value = item.tire_300_after || 0;
                     document.getElementById('tire_600_before').value = item.tire_600_before || 0;
                     document.getElementById('tire_600_after').value = item.tire_600_after || 0;
+                    document.getElementById('room_att').value = item.room_att || 0;
+                    document.getElementById('ship_att').value = item.ship_att || 0;
+                    document.getElementById('night_attend').value = item.night_attend || 0;
                     
                     document.querySelector('#addModal .modal-title').textContent = 'แก้ไขรายการ';
                     document.querySelector('#addModal .btn-primary').textContent = 'อัปเดต';
@@ -760,6 +799,9 @@ if (!isset($_SESSION['user_id'])) {
             formData.append('tire_300_after', document.getElementById('tire_300_after').value);
             formData.append('tire_600_before', document.getElementById('tire_600_before').value);
             formData.append('tire_600_after', document.getElementById('tire_600_after').value);
+            formData.append('room_att', document.getElementById('room_att').value || 0);
+            formData.append('ship_att', document.getElementById('ship_att').value || 0);
+            formData.append('night_attend', document.getElementById('night_attend').value || 0);
 
             fetch('api.php', {
                 method: 'POST',
@@ -802,6 +844,10 @@ if (!isset($_SESSION['user_id'])) {
             document.querySelector('#addModal .modal-title').textContent = 'เพิ่มรายการใหม่';
             document.querySelector('#addModal .btn-primary').textContent = 'บันทึก';
         });
+
+        function exportCSV(type) {
+            window.open('export.php?type=' + type + '&event_id=' + eventId, '_blank');
+        }
     </script>
 </body>
 </html>

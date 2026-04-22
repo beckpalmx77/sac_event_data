@@ -125,6 +125,9 @@ function addAttendee() {
     $tire_300_after = $_POST['tire_300_after'] ?? 0;
     $tire_600_before = $_POST['tire_600_before'] ?? 0;
     $tire_600_after = $_POST['tire_600_after'] ?? 0;
+    $room_att = intval($_POST['room_att'] ?? 0);
+    $ship_att = intval($_POST['ship_att'] ?? 0);
+    $night_att = intval($_POST['night_attend'] ?? 0);
     
     try {
         $stmt = $conn->prepare("
@@ -133,8 +136,9 @@ function addAttendee() {
                 participants_before, participants_after, reserve_room, used_room,
                 tire_40_before, tire_40_after, tire_80_before, tire_80_after,
                 tire_120_before, tire_120_after, tire_200_before, tire_200_after,
-                tire_300_before, tire_300_after, tire_600_before, tire_600_after
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tire_300_before, tire_300_after, tire_600_before, tire_600_after,
+                room_att, ship_att, night_att
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -142,7 +146,8 @@ function addAttendee() {
             $participants_before, $participants_after, $reserve_room, $used_room,
             $tire_40_before, $tire_40_after, $tire_80_before, $tire_80_after,
             $tire_120_before, $tire_120_after, $tire_200_before, $tire_200_after,
-            $tire_300_before, $tire_300_after, $tire_600_before, $tire_600_after
+            $tire_300_before, $tire_300_after, $tire_600_before, $tire_600_after,
+            $room_att, $ship_att, $night_att
         ]);
         
         updateSummary($event_id);
@@ -156,7 +161,7 @@ function addAttendee() {
 function updateSummary($event_id) {
     global $conn;
     
-    $stmt = $conn->query("
+$stmt = $conn->query("
         SELECT 
             COUNT(*) as total_shops,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
@@ -173,7 +178,10 @@ function updateSummary($event_id) {
             COALESCE(SUM(tire_300_before), 0) as total_tire_300_before,
             COALESCE(SUM(tire_300_after), 0) as total_tire_300_after,
             COALESCE(SUM(tire_600_before), 0) as total_tire_600_before,
-            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after
+            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after,
+            COALESCE(SUM(room_att), 0) as total_room_att,
+            COALESCE(SUM(ship_att), 0) as total_ship_att,
+            COALESCE(SUM(night_att), 0) as total_night_att
         FROM attendees WHERE event_id = $event_id
     ");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -181,7 +189,7 @@ function updateSummary($event_id) {
     $total_tire_before = $result['total_tire_40_before'] + $result['total_tire_80_before'] + $result['total_tire_120_before'] 
                        + $result['total_tire_200_before'] + $result['total_tire_300_before'] + $result['total_tire_600_before'];
     $total_tire_after = $result['total_tire_40_after'] + $result['total_tire_80_after'] + $result['total_tire_120_after'] 
-                      + $result['total_tire_200_after'] + $result['total_tire_300_after'] + $result['total_tire_600_after'];
+                       + $result['total_tire_200_after'] + $result['total_tire_300_after'] + $result['total_tire_600_after'];
     
     $stmt = $conn->prepare("
         UPDATE summary SET 
@@ -194,7 +202,8 @@ function updateSummary($event_id) {
             total_tire_200_before = ?, total_tire_200_after = ?,
             total_tire_300_before = ?, total_tire_300_after = ?,
             total_tire_600_before = ?, total_tire_600_after = ?,
-            total_tire_before = ?, total_tire_after = ?
+            total_tire_before = ?, total_tire_after = ?,
+            total_room_att = ?, total_ship_att = ?, total_night_att = ?
         WHERE event_id = ?
     ");
     
@@ -208,7 +217,9 @@ function updateSummary($event_id) {
         $result['total_tire_200_before'], $result['total_tire_200_after'],
         $result['total_tire_300_before'], $result['total_tire_300_after'],
         $result['total_tire_600_before'], $result['total_tire_600_after'],
-        $total_tire_before, $total_tire_after, $event_id
+        $total_tire_before, $total_tire_after,
+        $result['total_room_att'], $result['total_ship_att'], $result['total_night_att'],
+        $event_id
     ]);
 }
 
@@ -261,7 +272,10 @@ function getDashboardSummary() {
             COALESCE(SUM(tire_300_before), 0) as total_tire_300_before,
             COALESCE(SUM(tire_300_after), 0) as total_tire_300_after,
             COALESCE(SUM(tire_600_before), 0) as total_tire_600_before,
-            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after
+            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after,
+            COALESCE(SUM(room_att), 0) as total_room_att,
+            COALESCE(SUM(ship_att), 0) as total_ship_att,
+            COALESCE(SUM(night_att), 0) as total_night_attend
         FROM attendees WHERE event_id = $event_id $typeFilter
     ";
     $stmt = $conn->query($sql);
@@ -298,6 +312,9 @@ function updateAttendee() {
     $tire_300_after = $_POST['tire_300_after'] ?? 0;
     $tire_600_before = $_POST['tire_600_before'] ?? 0;
     $tire_600_after = $_POST['tire_600_after'] ?? 0;
+    $room_att = intval($_POST['room_att'] ?? 0);
+    $ship_att = intval($_POST['ship_att'] ?? 0);
+    $night_att = intval($_POST['night_attend'] ?? 0);
     
     try {
         $stmt = $conn->prepare("
@@ -306,7 +323,8 @@ function updateAttendee() {
                 participants_before = ?, participants_after = ?, reserve_room = ?, used_room = ?,
                 tire_40_before = ?, tire_40_after = ?, tire_80_before = ?, tire_80_after = ?,
                 tire_120_before = ?, tire_120_after = ?, tire_200_before = ?, tire_200_after = ?,
-                tire_300_before = ?, tire_300_after = ?, tire_600_before = ?, tire_600_after = ?
+                tire_300_before = ?, tire_300_after = ?, tire_600_before = ?, tire_600_after = ?,
+                room_att = ?, ship_att = ?, night_att = ?
             WHERE id = ?
         ");
         
@@ -316,6 +334,7 @@ function updateAttendee() {
             $tire_40_before, $tire_40_after, $tire_80_before, $tire_80_after,
             $tire_120_before, $tire_120_after, $tire_200_before, $tire_200_after,
             $tire_300_before, $tire_300_after, $tire_600_before, $tire_600_after,
+            $room_att, $ship_att, $night_att,
             $id
         ]);
         
