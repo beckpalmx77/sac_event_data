@@ -99,7 +99,7 @@ if (isset($_GET['edit'])) {
         
         <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h2 class="m-0">📅 จัดการงาน Event</h2>
+                <h5 class="m-0">📅 จัดการงาน Event</h5>
                 <div>
                     <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
                 </div>
