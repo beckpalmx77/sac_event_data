@@ -120,9 +120,16 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <h2>เลือกงาน Event</h2>
         </div>
         
-        <div class="event-body">
-            <div class="mb-4">
-                <h5 class="mb-3 text-primary">สร้างงานใหม่</h5>
+<div class="event-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-primary">สร้างงานใหม่</h5>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                        <a href="manage_event.php" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-gear"></i> จัดการงาน
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 <form method="POST">
                     <input type="hidden" name="create_event" value="1">
                     <div class="input-group">
@@ -150,7 +157,13 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <strong>📅 <?= htmlspecialchars($event['event_name']) ?></strong>
-                                        <div class="text-muted small"><?= $event['created_at'] ?></div>
+                                        <div class="text-muted small">
+                                            <?php if ($event['event_date']): ?>
+                                                📆 วันที่จัด: <?= date('d/m/Y', strtotime($event['event_date'])) ?>
+                                            <?php else: ?>
+                                                <?= $event['created_at'] ?>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                     <span class="text-primary">เข้า →</span>
                                 </div>
@@ -162,6 +175,11 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             
             <div class="mt-4 text-center">
+                <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="manage_event.php" class="btn btn-outline-primary logout-btn me-2">
+                    <i class="bi bi-gear"></i> จัดการงาน Event
+                </a>
+                <?php endif; ?>
                 <a href="logout.php" class="btn btn-outline-danger logout-btn">
                     <i class="bi bi-box-arrow-left"></i> ออกจากระบบ
                 </a>

@@ -46,6 +46,9 @@ if (!isset($_SESSION['user_id'])) {
         <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="m-0">📊 Dashboard สรุปสถิติ</h5>
+                <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
+                <?php endif; ?>
                 <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
             </div>
             <div class="card-body">

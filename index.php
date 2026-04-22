@@ -60,6 +60,7 @@ if (!isset($_SESSION['user_id'])) {
                     <!--a href="dashboard.php" target="_blank" class="btn btn-info btn-sm">📊 Dashboard</a-->
                     <a href="dashboard.php" class="btn btn-info btn-sm">📊 Dashboard</a>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
                     <a href="manage_user.php" class="btn btn-warning btn-sm">👥 จัดการ</a>
                     <?php endif; ?>
                     <a href="change_password.php" class="btn btn-outline-light btn-sm">🔑 เปลี่ยนรหัส</a>

@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS events;
 CREATE TABLE events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     event_name VARCHAR(100) NOT NULL,
+    event_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
