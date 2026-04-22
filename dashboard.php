@@ -16,7 +16,10 @@ if (!isset($_SESSION['user_id'])) {
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
+        body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .main-card .card-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 25px; }
+        .main-card .card-body { padding: 20px; }
         .stat-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 20px; text-align: center; margin-bottom: 15px; }
         .stat-card.primary { border-left: 5px solid #0d6efd; }
         .stat-card.success { border-left: 5px solid #198754; }
@@ -36,10 +39,16 @@ if (!isset($_SESSION['user_id'])) {
     </style>
 </head>
 <body>
-<div class="container-fluid py-3 px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📊 Dashboard สรุปสถิติ</h2>
-    </div>
+    <div class="container-fluid py-3 px-4">
+        <div class="text-center mb-3">
+            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 60px;">
+        </div>
+        <div class="main-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="m-0">📊 Dashboard สรุปสถิติ</h5>
+                <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+            </div>
+            <div class="card-body">
 
     <ul class="nav nav-tabs mb-3" id="dashTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -59,6 +68,7 @@ if (!isset($_SESSION['user_id'])) {
             <div class="row mb-4" id="summaryUser"></div>
             <div class="row mb-4" id="tireUser"></div>
         </div>
+    </div>
     </div>
 
     <div class="chart-container">
@@ -145,6 +155,13 @@ if (!isset($_SESSION['user_id'])) {
         const roomAtt = parseInt(data.total_room_att) || 0;
         const shipAtt = parseInt(data.total_ship_att) || 0;
         const nightAttend = parseInt(data.total_night_att) || 0;
+        const roomAttAfter = parseInt(data.total_room_att_after) || 0;
+        const shipAttAfter = parseInt(data.total_ship_att_after) || 0;
+        const nightAttAfter = parseInt(data.total_night_att_after) || 0;
+        
+        const roomDiff = roomAtt - roomAttAfter;
+        const shipDiff = shipAtt - shipAttAfter;
+        const nightDiff = nightAttend - nightAttAfter;
 
         const summaryHTML = `
                 <div class="col-12 mb-4">
@@ -155,10 +172,10 @@ if (!isset($_SESSION['user_id'])) {
                                 <tr>
                                     <th>รายละเอียด</th>
                                     <th class="text-center">ลงทะเบียน</th>
-                                    <th class="text-center">มาร่วมงาน</th>
-                                    <th class="text-center">ไม่มาร่วมงาน</th>
-                                    <th class="text-center">% มาร่วมงาน</th>
-                                    <th class="text-center">% ไม่มาร่วมงาน</th>
+                                    <th class="text-center">มาจริง</th>
+                                    <th class="text-center">ไม่มา/ยกเลิก</th>
+                                    <th class="text-center">% มาจริง</th>
+                                    <th class="text-center">% ไม่มา/ยกเลิก</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -179,16 +196,28 @@ if (!isset($_SESSION['user_id'])) {
                                     <td class="text-center">${totalPartBefore > 0 ? Math.round(partsNotCame/totalPartBefore*100) : 0}%</td>
                                 </tr>
                                 <tr>
-                                    <td>จำนวนห้องพัก (room_att)</td>
-                                    <td class="text-center" colspan="5">${roomAtt.toLocaleString()}</td>
+                                    <td>จำนวนห้องพัก</td>
+                                    <td class="text-center">${roomAtt.toLocaleString()}</td>
+                                    <td class="text-center">${roomAttAfter.toLocaleString()}</td>
+                                    <td class="text-center">${roomDiff > 0 ? roomDiff : 0}</td>
+                                    <td class="text-center">${roomAtt > 0 ? Math.round(roomAttAfter/roomAtt*100) : 0}%</td>
+                                    <td class="text-center">${roomAtt > 0 ? Math.round(roomDiff/roomAtt*100) : 0}%</td>
                                 </tr>
                                 <tr>
-                                    <td>จำนวนล่องเรือ (ship_att)</td>
-                                    <td class="text-center" colspan="5">${shipAtt.toLocaleString()}</td>
+                                    <td>จำนวนล่องเรือ</td>
+                                    <td class="text-center">${shipAtt.toLocaleString()}</td>
+                                    <td class="text-center">${shipAttAfter.toLocaleString()}</td>
+                                    <td class="text-center">${shipDiff > 0 ? shipDiff : 0}</td>
+                                    <td class="text-center">${shipAtt > 0 ? Math.round(shipAttAfter/shipAtt*100) : 0}%</td>
+                                    <td class="text-center">${shipAtt > 0 ? Math.round(shipDiff/shipAtt*100) : 0}%</td>
                                 </tr>
                                 <tr>
-                                    <td>จำนวนงานเลี้ยงเย็น (night_attend)</td>
-                                    <td class="text-center" colspan="5">${nightAttend.toLocaleString()}</td>
+                                    <td>จำนวนงานเลี้ยงเย็น</td>
+                                    <td class="text-center">${nightAttend.toLocaleString()}</td>
+                                    <td class="text-center">${nightAttAfter.toLocaleString()}</td>
+                                    <td class="text-center">${nightDiff > 0 ? nightDiff : 0}</td>
+                                    <td class="text-center">${nightAttend > 0 ? Math.round(nightAttAfter/nightAttend*100) : 0}%</td>
+                                    <td class="text-center">${nightAttend > 0 ? Math.round(nightDiff/nightAttend*100) : 0}%</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -292,7 +321,7 @@ if (!isset($_SESSION['user_id'])) {
         data.forEach(i => {
             const s = i.sales_name || 'ไม่ระบุ';
             if (!stats[s]) {
-                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, room_att: 0, ship_att: 0, night_att: 0, tire_before: 0, tire_after: 0 };
+                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, room_att: 0, ship_att: 0, night_att: 0, room_att_after: 0, ship_att_after: 0, night_att_after: 0, tire_before: 0, tire_after: 0 };
                 tireSizes.forEach(size => {
                     stats[s]['tire_'+size+'_before'] = 0;
                     stats[s]['tire_'+size+'_after'] = 0;
@@ -311,6 +340,9 @@ if (!isset($_SESSION['user_id'])) {
             stats[s].room_att += parseInt(i.room_att) || 0;
             stats[s].ship_att += parseInt(i.ship_att) || 0;
             stats[s].night_att += parseInt(i.night_att) || 0;
+            stats[s].room_att_after += parseInt(i.room_att_after) || 0;
+            stats[s].ship_att_after += parseInt(i.ship_att_after) || 0;
+            stats[s].night_att_after += parseInt(i.night_att_after) || 0;
             stats[s].tire_before += (parseInt(i.tire_40_before)||0) + (parseInt(i.tire_80_before)||0) + (parseInt(i.tire_120_before)||0) + (parseInt(i.tire_200_before)||0) + (parseInt(i.tire_300_before)||0) + (parseInt(i.tire_600_before)||0);
             stats[s].tire_after += (parseInt(i.tire_40_after)||0) + (parseInt(i.tire_80_after)||0) + (parseInt(i.tire_120_after)||0) + (parseInt(i.tire_200_after)||0) + (parseInt(i.tire_300_after)||0) + (parseInt(i.tire_600_after)||0);
             tireSizes.forEach(size => {
@@ -329,6 +361,9 @@ if (!isset($_SESSION['user_id'])) {
         const totalRoomAtt = Object.values(stats).reduce((sum, s) => sum + s.room_att, 0);
         const totalShipAtt = Object.values(stats).reduce((sum, s) => sum + s.ship_att, 0);
         const totalNightAtt = Object.values(stats).reduce((sum, s) => sum + s.night_att, 0);
+        const totalRoomAttAfter = Object.values(stats).reduce((sum, s) => sum + s.room_att_after, 0);
+        const totalShipAttAfter = Object.values(stats).reduce((sum, s) => sum + s.ship_att_after, 0);
+        const totalNightAttAfter = Object.values(stats).reduce((sum, s) => sum + s.night_att_after, 0);
         const totalTireBefore = Object.values(stats).reduce((sum, s) => sum + s.tire_before, 0);
         const totalTireAfter = Object.values(stats).reduce((sum, s) => sum + s.tire_after, 0);
 
@@ -344,6 +379,9 @@ if (!isset($_SESSION['user_id'])) {
             room_att: totalRoomAtt,
             ship_att: totalShipAtt,
             night_att: totalNightAtt,
+            room_att_after: totalRoomAttAfter,
+            ship_att_after: totalShipAttAfter,
+            night_att_after: totalNightAttAfter,
             tire_before: totalTireBefore,
             tire_after: totalTireAfter
         };
@@ -373,9 +411,24 @@ if (!isset($_SESSION['user_id'])) {
             columns.push({ title: size+'จริง', data: 'tire_'+size+'_after' });
         });
         
-        columns.push({ title: 'ห้องพัก', data: 'room_att' });
-        columns.push({ title: 'ล่องเรือ', data: 'ship_att' });
-        columns.push({ title: 'งานเลี้ยงเย็น', data: 'night_att' });
+        columns.push({ title: 'ห้องพัก(จอง)', data: 'room_att' });
+        columns.push({ title: 'ห้องพัก(จริง)', data: 'room_att_after' });
+        columns.push({ title: 'ห้องพัก(ต่าง)', data: null, render: (data) => {
+            const diff = (parseInt(data.room_att) || 0) - (parseInt(data.room_att_after) || 0);
+            return diff > 0 ? diff : 0;
+        }});
+        columns.push({ title: 'ล่องเรือ(จอง)', data: 'ship_att' });
+        columns.push({ title: 'ล่องเรือ(จริง)', data: 'ship_att_after' });
+        columns.push({ title: 'ล่องเรือ(ต่าง)', data: null, render: (data) => {
+            const diff = (parseInt(data.ship_att) || 0) - (parseInt(data.ship_att_after) || 0);
+            return diff > 0 ? diff : 0;
+        }});
+        columns.push({ title: 'งานเลี้ยง(จอง)', data: 'night_att' });
+        columns.push({ title: 'งานเลี้ยง(จริง)', data: 'night_att_after' });
+        columns.push({ title: 'งานเลี้ยง(ต่าง)', data: null, render: (data) => {
+            const diff = (parseInt(data.night_att) || 0) - (parseInt(data.night_att_after) || 0);
+            return diff > 0 ? diff : 0;
+        }});
 
         if (salesTable) salesTable.destroy();
         salesTable = $('#salesTable').DataTable({

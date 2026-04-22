@@ -16,7 +16,10 @@ if (!isset($_SESSION['user_id'])) {
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
+        body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .main-card .card-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 25px; }
+        .main-card .card-body { padding: 20px; }
         .summary-card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; }
         .summary-item { text-align: center; padding: 8px; }
         .summary-item .number { font-size: 20px; font-weight: bold; color: #0d6efd; }
@@ -46,18 +49,24 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <div class="container-fluid py-3 px-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-center">📋 บันทึกข้อมูลงาน Event</h2>
-            <div>
-                <span class="me-2 text-muted"><?= $_SESSION['full_name'] ?? '' ?></span>
-                <a href="dashboard.php" target="_blank" class="btn btn-info">📊 Dashboard</a>
-                <?php if ($_SESSION['role'] === 'admin'): ?>
-                <a href="manage_user.php" class="btn btn-warning">👥 จัดการผู้ใช้งานระบบ</a>
-                <?php endif; ?>
-                <a href="change_password.php" class="btn btn-outline-warning">🔑 เปลี่ยนรหัส</a>
-                <a href="logout.php" class="btn btn-outline-danger">ออกจากระบบ</a>
-            </div>
+        <div class="text-center mb-3">
+            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 60px;">
         </div>
+        <div class="main-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="m-0">📋 บันทึกข้อมูลงาน Event</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="me-2 text-white-50"><?= $_SESSION['full_name'] ?? '' ?></span>
+                    <!--a href="dashboard.php" target="_blank" class="btn btn-info btn-sm">📊 Dashboard</a-->
+                    <a href="dashboard.php" class="btn btn-info btn-sm">📊 Dashboard</a>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <a href="manage_user.php" class="btn btn-warning btn-sm">👥 จัดการ</a>
+                    <?php endif; ?>
+                    <a href="change_password.php" class="btn btn-outline-light btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="logout.php" class="btn btn-outline-light btn-sm">ออก</a>
+                </div>
+            </div>
+            <div class="card-body">
         
         <div class="row summary-card" id="summarySection">
             <div class="col-12 mb-2"><strong>🏪 ร้านค้า</strong></div>
@@ -264,6 +273,7 @@ if (!isset($_SESSION['user_id'])) {
             </table>
         </div>
     </div>
+</div>
 
     <div class="modal fade" id="addModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -338,7 +348,7 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                             </div>
                         </div>
-                        <h6 class="mb-2">ข้อมูลกิจกรรม</h6>
+                        <h6 class="mb-2">ข้อมูลกิจกรรม (ลงทะเบียน)</h6>
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">จำนวนห้องพัก (room_att)</label>
@@ -349,8 +359,23 @@ if (!isset($_SESSION['user_id'])) {
                                 <input type="number" class="form-control" id="ship_att" value="0" min="0">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">จำนวนงานเลี้ยงเย็น (night_attend)</label>
+                                <label class="form-label">จำนวนงานเลี้ยงเย็น (night_att)</label>
                                 <input type="number" class="form-control" id="night_attend" value="0" min="0">
+                            </div>
+                        </div>
+                        <h6 class="mb-2">ข้อมูลกิจกรรม (มาจริง)</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนห้องพักจริง (room_att_after)</label>
+                                <input type="number" class="form-control" id="room_att_after" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนล่องเรือจริง (ship_att_after)</label>
+                                <input type="number" class="form-control" id="ship_att_after" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนงานเลี้ยงเย็นจริง (night_att_after)</label>
+                                <input type="number" class="form-control" id="night_att_after" value="0" min="0">
                             </div>
                         </div>
                         <h6 class="mb-2">จำนวนจองจอง (แพค) - สำรวจก่อน</h6>
@@ -760,7 +785,10 @@ if (!isset($_SESSION['user_id'])) {
                     document.getElementById('tire_600_after').value = item.tire_600_after || 0;
                     document.getElementById('room_att').value = item.room_att || 0;
                     document.getElementById('ship_att').value = item.ship_att || 0;
-                    document.getElementById('night_attend').value = item.night_attend || 0;
+                    document.getElementById('night_attend').value = item.night_att || 0;
+                    document.getElementById('room_att_after').value = item.room_att_after || 0;
+                    document.getElementById('ship_att_after').value = item.ship_att_after || 0;
+                    document.getElementById('night_att_after').value = item.night_att_after || 0;
                     
                     document.querySelector('#addModal .modal-title').textContent = 'แก้ไขรายการ';
                     document.querySelector('#addModal .btn-primary').textContent = 'อัปเดต';
@@ -802,6 +830,9 @@ if (!isset($_SESSION['user_id'])) {
             formData.append('room_att', document.getElementById('room_att').value || 0);
             formData.append('ship_att', document.getElementById('ship_att').value || 0);
             formData.append('night_attend', document.getElementById('night_attend').value || 0);
+            formData.append('room_att_after', document.getElementById('room_att_after').value || 0);
+            formData.append('ship_att_after', document.getElementById('ship_att_after').value || 0);
+            formData.append('night_att_after', document.getElementById('night_att_after').value || 0);
 
             fetch('api.php', {
                 method: 'POST',

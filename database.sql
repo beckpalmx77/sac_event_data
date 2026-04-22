@@ -50,7 +50,10 @@ CREATE TABLE attendees (
     tire_600_after INT DEFAULT 0,
     room_att INT DEFAULT 0,
     ship_att INT DEFAULT 0,
-    night_attend INT DEFAULT 0,
+    night_att INT DEFAULT 0,
+    room_att_after INT DEFAULT 0,
+    ship_att_after INT DEFAULT 0,
+    night_att_after INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
@@ -82,7 +85,10 @@ CREATE TABLE summary (
     total_tire_after INT DEFAULT 0,
     total_room_att INT DEFAULT 0,
     total_ship_att INT DEFAULT 0,
-    total_night_attend INT DEFAULT 0,
+    total_night_att INT DEFAULT 0,
+    total_room_att_after INT DEFAULT 0,
+    total_ship_att_after INT DEFAULT 0,
+    total_night_att_after INT DEFAULT 0,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
