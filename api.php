@@ -170,6 +170,7 @@ $stmt = $conn->query("
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
             COALESCE(SUM(reserve_room), 0) as total_reserve_room,
+            COALESCE(SUM(used_room), 0) as total_used_room,
             COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
             COALESCE(SUM(tire_40_after), 0) as total_tire_40_after,
             COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
@@ -201,7 +202,7 @@ $stmt = $conn->query("
         UPDATE summary SET 
             total_shops = ?, 
             total_participants_before = ?, total_participants_after = ?, 
-            total_reserve_room = ?,
+            total_reserve_room = ?, total_used_room = ?,
             total_tire_40_before = ?, total_tire_40_after = ?,
             total_tire_80_before = ?, total_tire_80_after = ?,
             total_tire_120_before = ?, total_tire_120_after = ?,
@@ -210,14 +211,15 @@ $stmt = $conn->query("
             total_tire_600_before = ?, total_tire_600_after = ?,
             total_tire_before = ?, total_tire_after = ?,
             total_room_att = ?, total_ship_att = ?, total_night_att = ?,
-            total_room_att_after = ?, total_ship_att_after = ?, total_night_att_after = ?
+            total_room_att_after = ?, total_ship_att_after = ?, total_night_att_after = ?,
+            updated_at = CURRENT_TIMESTAMP
         WHERE event_id = ?
     ");
     
     $stmt->execute([
         $result['total_shops'], 
         $result['total_participants_before'], $result['total_participants_after'],
-        $result['total_reserve_room'],
+        $result['total_reserve_room'], $result['total_used_room'],
         $result['total_tire_40_before'], $result['total_tire_40_after'],
         $result['total_tire_80_before'], $result['total_tire_80_after'],
         $result['total_tire_120_before'], $result['total_tire_120_after'],
@@ -292,7 +294,54 @@ function getDashboardSummary() {
     $stmt = $conn->query($sql);
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    saveSummaryToDB($event_id, $summary);
+    
     echo json_encode($summary);
+}
+
+function saveSummaryToDB($event_id, $data) {
+    global $conn;
+    
+    $total_tire_before = ($data['total_tire_40_before'] ?? 0) + ($data['total_tire_80_before'] ?? 0) + 
+                      ($data['total_tire_120_before'] ?? 0) + ($data['total_tire_200_before'] ?? 0) + 
+                      ($data['total_tire_300_before'] ?? 0) + ($data['total_tire_600_before'] ?? 0);
+    $total_tire_after = ($data['total_tire_40_after'] ?? 0) + ($data['total_tire_80_after'] ?? 0) + 
+                       ($data['total_tire_120_after'] ?? 0) + ($data['total_tire_200_after'] ?? 0) + 
+                       ($data['total_tire_300_after'] ?? 0) + ($data['total_tire_600_after'] ?? 0);
+    
+    $stmt = $conn->prepare("
+        UPDATE summary SET 
+            total_shops = ?, 
+            total_participants_before = ?, total_participants_after = ?, 
+            total_reserve_room = ?, total_used_room = ?,
+            total_tire_40_before = ?, total_tire_40_after = ?,
+            total_tire_80_before = ?, total_tire_80_after = ?,
+            total_tire_120_before = ?, total_tire_120_after = ?,
+            total_tire_200_before = ?, total_tire_200_after = ?,
+            total_tire_300_before = ?, total_tire_300_after = ?,
+            total_tire_600_before = ?, total_tire_600_after = ?,
+            total_tire_before = ?, total_tire_after = ?,
+            total_room_att = ?, total_ship_att = ?, total_night_att = ?,
+            total_room_att_after = ?, total_ship_att_after = ?, total_night_att_after = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE event_id = ?
+    ");
+    
+    $stmt->execute([
+        $data['total_shops'], 
+        $data['total_participants_before'], $data['total_participants_after'],
+        $data['total_reserve_room'], $data['total_used_room'],
+        $data['total_tire_40_before'], $data['total_tire_40_after'],
+        $data['total_tire_80_before'], $data['total_tire_80_after'],
+        $data['total_tire_120_before'], $data['total_tire_120_after'],
+        $data['total_tire_200_before'], $data['total_tire_200_after'],
+        $data['total_tire_300_before'], $data['total_tire_300_after'],
+        $data['total_tire_600_before'], $data['total_tire_600_after'],
+        $total_tire_before, $total_tire_after,
+        $data['total_room_att'], $data['total_ship_att'], $data['total_night_att'],
+        $data['total_room_att_after'], $data['total_ship_att_after'], $data['total_night_att_after'],
+        $event_id
+    ]);
 }
 
 function updateAttendee() {
