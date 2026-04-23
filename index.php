@@ -515,6 +515,8 @@ if (!isset($_SESSION['user_id'])) {
             initDataTables();
             loadEvent();
             loadProvinces();
+            setInterval(loadAttendees, 5000); // Reload ทุก 5 วินาที
+            setInterval(loadSummary, 5000); // Reload ทุก 5 วินาที
             
             document.getElementById('type_shop').addEventListener('change', updateUseRoomVisibility);
             document.getElementById('type_user').addEventListener('change', updateUseRoomVisibility);
@@ -641,8 +643,9 @@ if (!isset($_SESSION['user_id'])) {
             }
         }
 
+        let lastAttendeesData = '';
+
         function loadAttendees() {
-            console.log('Loading attendees for event:', eventId);
             fetch('api.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -650,10 +653,13 @@ if (!isset($_SESSION['user_id'])) {
             })
             .then(res => res.json())
             .then(data => {
-                console.log('Attendees data:', data);
+                const newData = JSON.stringify(data);
+                if (lastAttendeesData === newData) {
+                    return;
+                }
+                lastAttendeesData = newData;
                 
                 if (!data || data.length === 0) {
-                    console.log('No data found');
                     return;
                 }
                 
@@ -671,6 +677,8 @@ if (!isset($_SESSION['user_id'])) {
             });
         }
 
+        let lastSummaryData = '';
+
         function loadSummary() {
             Promise.all([
                 fetch('api.php', {
@@ -685,6 +693,12 @@ if (!isset($_SESSION['user_id'])) {
                 }).then(res => res.json())
             ])
             .then(([shopData, userData]) => {
+                const newData = JSON.stringify({shop: shopData, user: userData});
+                if (lastSummaryData === newData) {
+                    return;
+                }
+                lastSummaryData = newData;
+                
                 document.getElementById('totalShopsShop').textContent = shopData.total_shops || 0;
                 document.getElementById('totalShopsUser').textContent = userData.total_shops || 0;
                 document.getElementById('totalParticipantsBeforeShop').textContent = shopData.total_participants_before || 0;

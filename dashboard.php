@@ -46,10 +46,13 @@ if (!isset($_SESSION['user_id'])) {
         <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="m-0">📊 Dashboard สรุปสถิติ</h5>
-                <?php if ($_SESSION['role'] === 'admin'): ?>
-                <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
-                <?php endif; ?>
-                <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary" id="lastUpdate">⏱️ รออัปเดต...</span>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
+                    <?php endif; ?>
+                    <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+                </div>
             </div>
             <div class="card-body">
 
@@ -91,9 +94,11 @@ if (!isset($_SESSION['user_id'])) {
     let allData = [];
     let salesTable;
     let currentType = 'shop';
+    let lastSummaryData = {};
 
     document.addEventListener('DOMContentLoaded', function() {
         loadData();
+        setInterval(loadData, 5000); // Reload ทุก 5 วินาที
     });
 
     document.querySelectorAll('#dashTab button').forEach(btn => {
@@ -111,6 +116,7 @@ if (!isset($_SESSION['user_id'])) {
                 loadAttendees();
                 loadDashboardSummary('shop');
                 loadDashboardSummary('user');
+                document.getElementById('lastUpdate').textContent = '⏱️ อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
             });
     }
 
@@ -122,10 +128,18 @@ if (!isset($_SESSION['user_id'])) {
             });
     }
 
-    function loadAttendees() {
+    let lastAttendeesData = '';
+
+function loadAttendees() {
         fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_attendees&event_id=' + eventId })
             .then(res => res.json())
             .then(data => {
+                const newData = JSON.stringify(data);
+                if (lastAttendeesData === newData) {
+                    return; // ข้อมูลเหมือนเดิม ไม่ต้อง render ใหม่
+                }
+                lastAttendeesData = newData;
+                
                 allData = data;
                 initSalesTable(data.filter(d => d.type === currentType));
                 loadSalesProvinceList('shop', data.filter(d => d.type === 'shop'));
@@ -141,6 +155,15 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     function renderStats(type, data) {
+        const key = type.toLowerCase();
+        const prevData = lastSummaryData[key];
+        
+        // ตรวจสอบว่าข้อมูลเปลี่ยนหรือไม่
+        if (prevData && JSON.stringify(prevData) === JSON.stringify(data)) {
+            return; // ข้อมูลเหมือนเดิม ไม่ต้อง render ใหม่
+        }
+        lastSummaryData[key] = data;
+        
         const totalShops = parseInt(data.total_shops) || 0;
         const totalPartBefore = parseInt(data.total_participants_before) || 0;
         const totalPartAfter = parseInt(data.total_participants_after) || 0;

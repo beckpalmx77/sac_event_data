@@ -259,42 +259,39 @@ function getDashboardSummary() {
     $event_id = $_POST['event_id'] ?? 0;
     $type = $_POST['type'] ?? 'all';
     
-    $typeFilter = '';
-    if ($type === 'shop') $typeFilter = "AND type = 'shop'";
-    else if ($type === 'user') $typeFilter = "AND type = 'user'";
-    
-    $sql = "
-        SELECT 
-            COUNT(*) as total_shops,
-            COUNT(CASE WHEN participants_after > 0 THEN 1 END) as shops_came,
-            COALESCE(SUM(participants_before), 0) as total_participants_before,
-            COALESCE(SUM(participants_after), 0) as total_participants_after,
-            COALESCE(SUM(reserve_room), 0) as total_reserve_room,
-            COALESCE(SUM(used_room), 0) as total_used_room,
-            COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
-            COALESCE(SUM(tire_40_after), 0) as total_tire_40_after,
-            COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
-            COALESCE(SUM(tire_80_after), 0) as total_tire_80_after,
-            COALESCE(SUM(tire_120_before), 0) as total_tire_120_before,
-            COALESCE(SUM(tire_120_after), 0) as total_tire_120_after,
-            COALESCE(SUM(tire_200_before), 0) as total_tire_200_before,
-            COALESCE(SUM(tire_200_after), 0) as total_tire_200_after,
-            COALESCE(SUM(tire_300_before), 0) as total_tire_300_before,
-            COALESCE(SUM(tire_300_after), 0) as total_tire_300_after,
-            COALESCE(SUM(tire_600_before), 0) as total_tire_600_before,
-            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after,
-            COALESCE(SUM(room_att), 0) as total_room_att,
-            COALESCE(SUM(ship_att), 0) as total_ship_att,
-            COALESCE(SUM(night_att), 0) as total_night_att,
-            COALESCE(SUM(room_att_after), 0) as total_room_att_after,
-            COALESCE(SUM(ship_att_after), 0) as total_ship_att_after,
-            COALESCE(SUM(night_att_after), 0) as total_night_att_after
-        FROM attendees WHERE event_id = $event_id $typeFilter
-    ";
-    $stmt = $conn->query($sql);
+    $stmt = $conn->query("SELECT * FROM summary WHERE event_id = $event_id");
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    saveSummaryToDB($event_id, $summary);
+    if ($summary) {
+        $summary['shops_came'] = 0;
+    } else {
+        $summary = [
+            'total_shops' => 0,
+            'total_participants_before' => 0,
+            'total_participants_after' => 0,
+            'total_reserve_room' => 0,
+            'total_used_room' => 0,
+            'total_tire_40_before' => 0,
+            'total_tire_40_after' => 0,
+            'total_tire_80_before' => 0,
+            'total_tire_80_after' => 0,
+            'total_tire_120_before' => 0,
+            'total_tire_120_after' => 0,
+            'total_tire_200_before' => 0,
+            'total_tire_200_after' => 0,
+            'total_tire_300_before' => 0,
+            'total_tire_300_after' => 0,
+            'total_tire_600_before' => 0,
+            'total_tire_600_after' => 0,
+            'total_room_att' => 0,
+            'total_ship_att' => 0,
+            'total_night_att' => 0,
+            'total_room_att_after' => 0,
+            'total_ship_att_after' => 0,
+            'total_night_att_after' => 0,
+            'shops_came' => 0
+        ];
+    }
     
     echo json_encode($summary);
 }
