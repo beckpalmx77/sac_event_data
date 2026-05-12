@@ -141,7 +141,7 @@ $room_att = intval($_POST['room_att'] ?? 0);
                 tire_120_before, tire_120_after, tire_200_before, tire_200_after,
                 tire_300_before, tire_300_after, tire_600_before, tire_600_after,
                 room_att, ship_att, night_att, room_att_after, ship_att_after, night_att_after
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -437,10 +437,10 @@ function getProvinces() {
     
     try {
         if ($search) {
-            $stmt = $conn->prepare("SELECT name_th FROM provinces WHERE name_th LIKE ? LIMIT 20");
+            $stmt = $conn->prepare("SELECT province_name FROM provinces WHERE province_name LIKE ? LIMIT 20");
             $stmt->execute(["%$search%"]);
         } else {
-            $stmt = $conn->query("SELECT name_th FROM provinces ORDER BY name_th");
+            $stmt = $conn->query("SELECT province_name FROM provinces ORDER BY province_name");
         }
         
         $provinces = $stmt->fetchAll(PDO::FETCH_COLUMN);
