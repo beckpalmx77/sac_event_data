@@ -166,7 +166,7 @@ function updateSummary($event_id) {
     
 $stmt = $conn->query("
         SELECT 
-            COUNT(*) as total_shops,
+            SUM(CASE WHEN type='shop' THEN 1 ELSE 0 END) as total_shops,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
             COALESCE(SUM(reserve_room), 0) as total_reserve_room,
@@ -256,10 +256,41 @@ function getSummary() {
 
 function getDashboardSummary() {
     global $conn;
-    $event_id = $_POST['event_id'] ?? 0;
+    $event_id = intval($_POST['event_id'] ?? 0);
     $type = $_POST['type'] ?? 'all';
     
-    $stmt = $conn->query("SELECT * FROM summary WHERE event_id = $event_id");
+    $type_condition = '';
+    if ($type === 'shop' || $type === 'user') {
+        $type_condition = "AND type = '$type'";
+    }
+    
+    $stmt = $conn->query("
+        SELECT 
+            COUNT(*) as total_shops,
+            COALESCE(SUM(participants_before), 0) as total_participants_before,
+            COALESCE(SUM(participants_after), 0) as total_participants_after,
+            COALESCE(SUM(reserve_room), 0) as total_reserve_room,
+            COALESCE(SUM(used_room), 0) as total_used_room,
+            COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
+            COALESCE(SUM(tire_40_after), 0) as total_tire_40_after,
+            COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
+            COALESCE(SUM(tire_80_after), 0) as total_tire_80_after,
+            COALESCE(SUM(tire_120_before), 0) as total_tire_120_before,
+            COALESCE(SUM(tire_120_after), 0) as total_tire_120_after,
+            COALESCE(SUM(tire_200_before), 0) as total_tire_200_before,
+            COALESCE(SUM(tire_200_after), 0) as total_tire_200_after,
+            COALESCE(SUM(tire_300_before), 0) as total_tire_300_before,
+            COALESCE(SUM(tire_300_after), 0) as total_tire_300_after,
+            COALESCE(SUM(tire_600_before), 0) as total_tire_600_before,
+            COALESCE(SUM(tire_600_after), 0) as total_tire_600_after,
+            COALESCE(SUM(room_att), 0) as total_room_att,
+            COALESCE(SUM(ship_att), 0) as total_ship_att,
+            COALESCE(SUM(night_att), 0) as total_night_att,
+            COALESCE(SUM(room_att_after), 0) as total_room_att_after,
+            COALESCE(SUM(ship_att_after), 0) as total_ship_att_after,
+            COALESCE(SUM(night_att_after), 0) as total_night_att_after
+        FROM attendees WHERE event_id = $event_id $type_condition
+    ");
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($summary) {
