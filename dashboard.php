@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     <style>
         body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .main-card .card-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 25px; }
+        .main-card .card-header { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; padding: 20px 25px; }
         .main-card .card-body { padding: 20px; }
         .stat-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 20px; text-align: center; margin-bottom: 15px; }
         .stat-card.primary { border-left: 5px solid #0d6efd; }
@@ -40,12 +40,12 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <div class="container-fluid py-3 px-4">
-        <div class="text-center mb-3">
-            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 60px;">
-        </div>
         <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="m-0">📊 Dashboard สรุปสถิติ</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
+                    <h5 class="m-0 text-white">📊 Dashboard สรุปสถิติ</h5>
+                </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-secondary" id="lastUpdate">⏱️ รออัปเดต...</span>
                     <?php if ($_SESSION['role'] === 'admin'): ?>

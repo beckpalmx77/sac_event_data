@@ -61,7 +61,10 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <div class="container py-4">
-        <h3>👥 จัดการผู้ใช้</h3>
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 40px;">
+            <h3 class="m-0">👥 จัดการผู้ใช้</h3>
+        </div>
         
         <?php if ($message): ?>
             <div class="alert alert-success"><?= $message ?></div>
@@ -71,7 +74,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
         
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">เพิ่มผู้ใช้ใหม่</div>
+            <div class="card-header bg-secondary text-white">เพิ่มผู้ใช้ใหม่</div>
             <div class="card-body">
                 <form method="POST" class="row g-3">
                     <input type="hidden" name="add_user" value="1">

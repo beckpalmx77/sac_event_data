@@ -50,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-secondary text-white d-flex align-items-center gap-2">
+                        <img src="img/logo/logo text-01.png" alt="Logo" style="height: 25px;">
                         <h5 class="mb-0">🔐 เปลี่ยนรหัสผ่าน</h5>
                     </div>
                     <div class="card-body">
