@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">บันทึก</button>
-                                <a href="index.php" class="btn btn-secondary">กลับ</a>
+                                <a href="main" class="btn btn-secondary">กลับ</a>
                             </div>
                         </form>
                     </div>

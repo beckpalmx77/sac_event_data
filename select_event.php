@@ -9,7 +9,7 @@ require_once 'config/connect_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_event'])) {
     $_SESSION['event_id'] = $_POST['event_id'];
-    header('Location: index.php');
+    header('Location: main');
     exit;
 }
 
@@ -24,13 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_event'])) {
         $stmt->execute([$new_event_id]);
         
         $_SESSION['event_id'] = $new_event_id;
-        header('Location: index.php');
+        header('Location: main');
         exit;
     }
 }
 
 if (isset($_SESSION['event_id'])) {
-    header('Location: index.php');
+    header('Location: main');
     exit;
 }
 
@@ -176,11 +176,11 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="mt-4 text-center">
                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                <a href="manage_event.php" class="btn btn-outline-primary logout-btn me-2">
+                <a href="manage_event" class="btn btn-outline-primary logout-btn me-2">
                     <i class="bi bi-gear"></i> จัดการงาน Event
                 </a>
                 <?php endif; ?>
-                <a href="logout.php" class="btn btn-outline-danger logout-btn">
+                <a href="logout" class="btn btn-outline-danger logout-btn">
                     <i class="bi bi-box-arrow-left"></i> ออกจากระบบ
                 </a>
             </div>

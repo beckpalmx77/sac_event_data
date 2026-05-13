@@ -24,7 +24,7 @@ if (!isset($_SESSION['user_id'])) {
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">🏠 หน้าหลัก</a>
+        <a class="navbar-brand" href="main.php">🏠 หน้าหลัก</a>
         <a class="navbar-brand" href="dashboard.php">📊 Dashboard</a>
         <span class="navbar-brand text-white">📈 Dashboard Graph</span>
     </div>

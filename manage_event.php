@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once 'config/connect_db.php';
 
 if ($_SESSION['role'] !== 'admin') {
-    header('Location: index.php');
+    header('Location: main.php');
     exit;
 }
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_POST['select_event'])) {
         $_SESSION['event_id'] = $_POST['event_id'];
-        header('Location: index.php');
+        header('Location: main.php');
         exit;
     }
 }
@@ -100,7 +100,7 @@ if (isset($_GET['edit'])) {
                     <h5 class="m-0 text-white">📅 จัดการงาน Event</h5>
                 </div>
                 <div>
-                    <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+                    <a href="main" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
                 </div>
             </div>
             
@@ -145,7 +145,7 @@ if (isset($_GET['edit'])) {
                                             <i class="bi bi-check-circle"></i> <?= $edit_event ? 'บันทึกการแก้ไข' : 'สร้างงาน' ?>
                                         </button>
                                         <?php if ($edit_event): ?>
-                                            <a href="manage_event.php" class="btn btn-secondary">ยกเลิก</a>
+                                            <a href="manage_event" class="btn btn-secondary">ยกเลิก</a>
                                         <?php endif; ?>
                                     </div>
                                 </form>
@@ -190,11 +190,11 @@ if (isset($_GET['edit'])) {
                                                                 <i class="bi bi-box-arrow-in-right"></i>
                                                             </button>
                                                         </form>
-                                                        <a href="?edit=<?= $event['id'] ?>" class="btn btn-warning btn-action" title="แก้ไข">
+                                                        <a href="manage_event.php?edit=<?= $event['id'] ?>" class="btn btn-warning btn-action" title="แก้ไข">
                                                             <i class="bi bi-pencil"></i>
                                                         </a>
                                                         <button type="button" class="btn btn-danger btn-action" title="ลบ" 
-                                                                onclick="confirmDelete(<?= $event['id'] ?>, '<?= htmlspecialchars($event['event_name']) ?>')">
+                                                                onclick="confirmDelete(<?= $event['id'] ?>, '<?= htmlspecialchars($event['event_name'], ENT_QUOTES) ?>')">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </td>

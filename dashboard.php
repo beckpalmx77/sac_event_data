@@ -49,9 +49,9 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-secondary" id="lastUpdate">⏱️ รออัปเดต...</span>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
-                    <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
+                    <a href="manage_event" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
                     <?php endif; ?>
-                    <a href="index.php" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+                    <a href="main" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
                 </div>
             </div>
             <div class="card-body">

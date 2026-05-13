@@ -75,7 +75,7 @@
 |------|---------|
 | login.php | หน้าเข้าสู่ระบบ |
 | select_event.php | เลือกงาน Event |
-| index.php | หน้าหลัก - บันทึกข้อมูลผู้เข้าร่วม |
+| main.php | หน้าหลัก - บันทึกข้อมูลผู้เข้าร่วม |
 | dashboard.php | Dashboard - สรุปสถิติ |
 | manage_event.php | จัดการงาน Event (Admin) |
 | manage_user.php | จัดการผู้ใช้ (Admin) |
@@ -102,12 +102,12 @@ select_event.php / manage_event.php
   - เลือก Event ที่มีอยู่
   - สร้าง Event ใหม่ (มี event_date)
   - แก้ไข/ลบ Event (Admin)
-  ↓ redirect → index.php
+  ↓ redirect → main.php
 ```
 
 ### 3. การบันทึกข้อมูล
 ```
-index.php (Frontend)
+main.php (Frontend)
   ↓ JavaScript: saveData()
 api.php → addAttendee()
   ↓ INSERT ลง attendees
@@ -117,7 +117,7 @@ api.php → addAttendee()
 
 ### 4. การแก้ไข/ลบข้อมูล
 ```
-index.php → editItem() / deleteItem()
+main.php → editItem() / deleteItem()
 api.php → updateAttendee() / deleteAttendee()
   ↓ UPDATE/DELETE ลง attendees
   ↓ updateSummary(event_id) → UPDATE summary

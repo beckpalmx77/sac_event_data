@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SESSION['role'] !== 'admin') {
-    echo '<script>alert("ไม่มีสิทธิ์เข้าถึง"); window.location.href="index.php";</script>';
+    echo '<script>alert("ไม่มีสิทธิ์เข้าถึง"); window.location.href="main";</script>';
     exit;
 }
 
@@ -139,8 +139,8 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         
         <div class="mt-3">
-            <a href="index.php" class="btn btn-secondary">กลับ</a>
-            <a href="change_password.php" class="btn btn-warning">เปลี่ยนรหัสผ่าน</a>
+            <a href="main" class="btn btn-secondary">กลับ</a>
+            <a href="change_password" class="btn btn-warning">เปลี่ยนรหัสผ่าน</a>
         </div>
     </div>
 </body>

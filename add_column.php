@@ -19,4 +19,4 @@ try {
 }
 
 echo "<hr>";
-echo "<a href='index.php'>กลับหน้าบันทึกข้อมูล</a>";
+echo "<a href='main.php'>กลับหน้าบันทึกข้อมูล</a>";

@@ -57,4 +57,4 @@ if (count($notFound) > 0) {
     echo "<p>ไม่พบ: " . count($notFound) . " รายการ</p>";
     echo "<ul>" . implode(', ', array_slice($notFound, 0, 10)) . "...</ul>";
 }
-echo "<a href='index.php' class='btn btn-primary'>กลับหน้าบันทึกข้อมูล</a>";
+echo "<a href='main.php' class='btn btn-primary'>กลับหน้าบันทึกข้อมูล</a>";

@@ -34,4 +34,4 @@ $shopPct = $r['p_before'] > 0 ? round($r['p_after'] / $r['p_before'] * 100) : 0;
 echo "<p>% มาจริง: $shopPct%</p>";
 
 echo "<hr>";
-echo "<a href='index.php'>กลับหน้าบันทึกข้อมูล</a>";
+echo "<a href='main.php'>กลับหน้าบันทึกข้อมูล</a>";

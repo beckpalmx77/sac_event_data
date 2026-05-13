@@ -18,5 +18,5 @@ foreach ($statements as $statement) {
 }
 
 echo "<h3>✅ สร้าง Database สำเร็จ!</h3>";
-echo "<a href='index.php' class='btn btn-primary'>ไปหน้าบันทึกข้อมูล</a> | ";
+echo "<a href='main.php' class='btn btn-primary'>ไปหน้าบันทึกข้อมูล</a> | ";
 echo "<a href='import_csv.php?confirm=yes' class='btn btn-success'>Import CSV</a>";

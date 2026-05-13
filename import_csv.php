@@ -135,5 +135,5 @@ $stmt->execute([
 
 echo "<h3>✅ Import สำเร็จ!</h3>";
 echo "<p>ร้านค้า: $shopCount รายการ | ผู้ใช้: $userCount รายการ | รวม: " . ($shopCount + $userCount) . " รายการ</p>";
-echo "<a href='index.php' class='btn btn-primary'>ไปหน้าบันทึกข้อมูล</a> | ";
+echo "<a href='main.php' class='btn btn-primary'>ไปหน้าบันทึกข้อมูล</a> | ";
 echo "<a href='dashboard.php' class='btn btn-info'>ไปหน้า Dashboard</a>";
