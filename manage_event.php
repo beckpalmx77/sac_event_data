@@ -1,14 +1,14 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 
 require_once 'config/connect_db.php';
 
 if ($_SESSION['role'] !== 'admin') {
-    header('Location: main.php');
+    header('Location: main');
     exit;
 }
 

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['role'] = $user['role'];
             
-            header('Location: select_event.php');
+            header('Location: select_event');
             exit;
         } else {
             $error = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';

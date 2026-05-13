@@ -1,7 +1,8 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
+
     exit;
 }
 ?>
@@ -64,7 +65,7 @@ if (!isset($_SESSION['user_id'])) {
                     <a href="manage_user" class="btn btn-warning btn-sm">👥 จัดการ</a>
                     <?php endif; ?>
                     <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
-                    <a href="logout.php" class="btn btn-outline-secondary btn-sm">ออก</a>
+                    <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
             </div>
             <div class="card-body">

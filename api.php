@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 require_once 'config/connect_db.php';
@@ -45,7 +45,7 @@ switch ($action) {
 
 function logout() {
     session_destroy();
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 

@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 
@@ -125,7 +125,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0 text-primary">สร้างงานใหม่</h5>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
-                        <a href="manage_event.php" class="btn btn-outline-primary btn-sm">
+                        <a href="manage_event" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-gear"></i> จัดการงาน
                         </a>
                         <?php endif; ?>
