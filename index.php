@@ -58,12 +58,12 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="me-2 text-muted"><?= $_SESSION['full_name'] ?? '' ?></span>
-                    <a href="dashboard.php" class="btn btn-info btn-sm">📊 Dashboard</a>
+                    <a href="dashboard" class="btn btn-info btn-sm">📊 Dashboard</a>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
-                    <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
-                    <a href="manage_user.php" class="btn btn-warning btn-sm">👥 จัดการ</a>
+                    <a href="manage_event" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
+                    <a href="manage_user" class="btn btn-warning btn-sm">👥 จัดการ</a>
                     <?php endif; ?>
-                    <a href="change_password.php" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
                     <a href="logout.php" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
             </div>
@@ -165,7 +165,7 @@ if (!isset($_SESSION['user_id'])) {
         <button class="btn btn-success btn-lg mb-3 ms-2" onclick="exportCSV('user')">
             📥 Export ผู้ใช้
         </button>
-        <button class="btn btn-warning btn-lg mb-3 ms-2" onclick="window.open('export_excel.php?event_id=' + eventId, '_blank')">
+        <button class="btn btn-warning btn-lg mb-3 ms-2" onclick="window.open('export_excel?event_id=' + eventId, '_blank')">
             📊 Export Excel
         </button>
 
