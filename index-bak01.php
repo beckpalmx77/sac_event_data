@@ -14,12 +14,11 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .main-card .card-header { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; padding: 20px 25px; }
+        .main-card .card-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 25px; }
         .main-card .card-body { padding: 20px; }
         .summary-card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; }
         .summary-item { text-align: center; padding: 8px; }
@@ -50,12 +49,12 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <div class="container-fluid py-3 px-4">
+        <div class="text-center mb-3">
+            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 60px;">
+        </div>
         <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
-                    <h5 class="m-0 text-white">บันทึกข้อมูลงาน Event</h5>
-                </div>
+                <h5 class="m-0">📋 บันทึกข้อมูลงาน Event</h5>
                 <div class="d-flex align-items-center gap-2">
                     <span class="me-2 text-white-50"><?= $_SESSION['full_name'] ?? '' ?></span>
                     <!--a href="dashboard.php" target="_blank" class="btn btn-info btn-sm">📊 Dashboard</a-->
@@ -286,181 +285,152 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="modal-body">
                     <form id="addForm">
-                        <!-- Card: ข้อมูลทั่วไป -->
-                        <div class="card mb-3 border-0 shadow-sm">
-                            <div class="card-header bg-primary bg-opacity-10 py-2">
-                                <h6 class="mb-0 text-primary"><i class="bi bi-info-circle me-1"></i> ข้อมูลทั่วไป</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">เซลส์</label>
+                                <input type="text" class="form-control" id="sales_name" required>
                             </div>
-                            <div class="card-body pb-2">
-                                <div class="row mb-2">
-                                    <div class="col-md-6">
-                                        <label class="form-label">เซลส์</label>
-                                        <input type="text" class="form-control" id="sales_name" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">ลำดับในเซลส์</label>
-                                        <input type="number" class="form-control" id="order_no" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">ลำดับรวม</label>
-                                        <input type="number" class="form-control" id="total_no" required>
-                                    </div>
+                            <div class="col-md-3">
+                                <label class="form-label">ลำดับในเซลส์</label>
+                                <input type="number" class="form-control" id="order_no" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">ลำดับรวม</label>
+                                <input type="number" class="form-control" id="total_no" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">รายชื่อ</label>
+                            <input type="text" class="form-control" id="shop_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ประเภท</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="type" id="type_shop" value="shop" checked>
+                                    <label class="form-check-label" for="type_shop">🏪 ร้านค้า</label>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label">รายชื่อ</label>
-                                    <input type="text" class="form-control" id="shop_name" required>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">ประเภท</label>
-                                    <div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="type" id="type_shop" value="shop" checked>
-                                            <label class="form-check-label" for="type_shop">🏪 ร้านค้า</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="type" id="type_user" value="user">
-                                            <label class="form-check-label" for="type_user">👤 ผู้ใช้</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-2 position-relative">
-                                    <label class="form-label">จังหวัด</label>
-                                    <input type="text" class="form-control" id="province" oninput="showProvinceSuggestions(this)" onblur="setTimeout(()=>document.getElementById('provinceSuggestions').style.display='none',200)" required>
-                                    <div id="provinceSuggestions" class="position-absolute bg-white border rounded shadow-sm" style="display:none;z-index:1000;max-height:200px;overflow-y:auto;width:calc(100% - 12px);left:12px;top:100%;"></div>
-                                </div>
-                                <div class="mb-0">
-                                    <label class="form-label">หมายเหตุ</label>
-                                    <input type="text" class="form-control" id="note">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="type" id="type_user" value="user">
+                                    <label class="form-check-label" for="type_user">👤 ผู้ใช้</label>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Card: ข้อมูลกิจกรรม (ลงทะเบียน) -->
-                        <div class="card mb-3 border-0 shadow-sm">
-                            <div class="card-header bg-success bg-opacity-10 py-2">
-                                <h6 class="mb-0 text-success"><i class="bi bi-calendar-check me-1"></i> ข้อมูลกิจกรรม (ลงทะเบียน)</h6>
+                        <div class="mb-3 position-relative">
+                            <label class="form-label">จังหวัด</label>
+                            <input type="text" class="form-control" id="province" oninput="showProvinceSuggestions(this)" onblur="setTimeout(()=>document.getElementById('provinceSuggestions').style.display='none',200)" required>
+                            <div id="provinceSuggestions" class="position-absolute bg-white border rounded shadow-sm" style="display:none;z-index:1000;max-height:200px;overflow-y:auto;width:calc(100% - 12px);left:12px;top:100%;"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หมายเหตุ</label>
+                            <input type="text" class="form-control" id="note">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">จำนวนคน (สำรวจก่อน)</label>
+                                <input type="number" class="form-control" id="participants_before" value="0">
                             </div>
-                            <div class="card-body pb-2">
-                                <div class="row mb-2">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จำนวนคน (สำรวจก่อน)</label>
-                                        <input type="number" class="form-control" id="participants_before" value="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">จำนวนคน (มาจริง)</label>
-                                        <input type="number" class="form-control" id="participants_after" value="0">
-                                    </div>
-                                </div>
-                                <div class="row mb-2" id="useRoomContainer">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จองห้องพัก</label>
-                                        <input type="number" class="form-control" id="reserve_room" value="0" min="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">ใช้ห้องจริง</label>
-                                        <input type="number" class="form-control" id="used_room" value="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จำนวนห้องพัก (room_att)</label>
-                                        <input type="number" class="form-control" id="room_att" value="0" min="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">จำนวนห้องพักจริง (room_att_after)</label>
-                                        <input type="number" class="form-control" id="room_att_after" value="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จำนวนล่องเรือ (ship_att)</label>
-                                        <input type="number" class="form-control" id="ship_att" value="0" min="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">จำนวนล่องเรือจริง (ship_att_after)</label>
-                                        <input type="number" class="form-control" id="ship_att_after" value="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="row mb-0">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จำนวนงานเลี้ยงเย็น (night_att)</label>
-                                        <input type="number" class="form-control" id="night_attend" value="0" min="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">จำนวนงานเลี้ยงเย็นจริง (night_att_after)</label>
-                                        <input type="number" class="form-control" id="night_att_after" value="0" min="0">
-                                    </div>
-                                </div>
+                            <div class="col-md-6">
+                                <label class="form-label">จำนวนคน (มาจริง)</label>
+                                <input type="number" class="form-control" id="participants_after" value="0">
                             </div>
                         </div>
-
-                        <!-- Card: จองยาง (สำรวจก่อน) -->
-                        <div class="card mb-3 border-0 shadow-sm">
-                            <div class="card-header bg-warning bg-opacity-10 py-2">
-                                <h6 class="mb-0 text-warning"><i class="bi bi-bullseye me-1"></i> จำนวนจองยาง (แพค) - สำรวจก่อน</h6>
-                            </div>
-                            <div class="card-body pb-2">
+                        <div class="row mb-3">
+                            <div class="col-md-6 d-flex align-items-center" id="useRoomContainer">
                                 <div class="row">
-                                    <div class="col">
-                                        <label>40</label>
-                                        <input type="number" class="form-control tire-input" id="tire_40_before" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label>80</label>
-                                        <input type="number" class="form-control tire-input" id="tire_80_before" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label>120</label>
-                                        <input type="number" class="form-control tire-input" id="tire_120_before" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label>200</label>
-                                        <input type="number" class="form-control tire-input" id="tire_200_before" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label>300</label>
-                                        <input type="number" class="form-control tire-input" id="tire_300_before" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label>600</label>
-                                        <input type="number" class="form-control tire-input" id="tire_600_before" value="0" min="0">
-                                    </div>
+                                <div class="col-6">
+                                    <label class="form-label">จองห้องพัก</label>
+                                    <input type="number" class="form-control" id="reserve_room" value="0" min="0">
                                 </div>
+                                <div class="col-6">
+                                    <label class="form-label">ใช้ห้องจริง</label>
+                                    <input type="number" class="form-control" id="used_room" value="0" min="0">
+                                </div>
+                            </div>
                             </div>
                         </div>
-
-                        <!-- Card: จองยาง (มาจริง) -->
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-danger bg-opacity-10 py-2">
-                                <h6 class="mb-0 text-danger"><i class="bi bi-check-circle me-1"></i> จำนวนจองยาง (แพค) - มาจริง</h6>
+                        <h6 class="mb-2">ข้อมูลกิจกรรม (ลงทะเบียน)</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนห้องพัก (room_att)</label>
+                                <input type="number" class="form-control" id="room_att" value="0" min="0">
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <label class="text-danger">40</label>
-                                        <input type="number" class="form-control tire-input" id="tire_40_after" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label class="text-danger">80</label>
-                                        <input type="number" class="form-control tire-input" id="tire_80_after" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label class="text-danger">120</label>
-                                        <input type="number" class="form-control tire-input" id="tire_120_after" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label class="text-danger">200</label>
-                                        <input type="number" class="form-control tire-input" id="tire_200_after" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label class="text-danger">300</label>
-                                        <input type="number" class="form-control tire-input" id="tire_300_after" value="0" min="0">
-                                    </div>
-                                    <div class="col">
-                                        <label class="text-danger">600</label>
-                                        <input type="number" class="form-control tire-input" id="tire_600_after" value="0" min="0">
-                                    </div>
-                                </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนล่องเรือ (ship_att)</label>
+                                <input type="number" class="form-control" id="ship_att" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">จำนวนงานเลี้ยงเย็น (night_att)</label>
+                                <input type="number" class="form-control" id="night_attend" value="0" min="0">
+                            </div>
+                        </div>
+                        <h6 class="mb-2 text-danger">ข้อมูลกิจกรรม (มาจริง)</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="text-danger">จำนวนห้องพักจริง (room_att_after)</label>
+                                <input type="number" class="form-control" id="room_att_after" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-danger">จำนวนล่องเรือจริง (ship_att_after)</label>
+                                <input type="number" class="form-control" id="ship_att_after" value="0" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-danger">จำนวนงานเลี้ยงเย็นจริง (night_att_after)</label>
+                                <input type="number" class="form-control" id="night_att_after" value="0" min="0">
+                            </div>
+                        </div>
+                        <h6 class="mb-2">จำนวนจองจอง (แพค) - สำรวจก่อน</h6>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label>40</label>
+                                <input type="number" class="form-control tire-input" id="tire_40_before" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label>80</label>
+                                <input type="number" class="form-control tire-input" id="tire_80_before" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label>120</label>
+                                <input type="number" class="form-control tire-input" id="tire_120_before" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label>200</label>
+                                <input type="number" class="form-control tire-input" id="tire_200_before" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label>300</label>
+                                <input type="number" class="form-control tire-input" id="tire_300_before" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label>600</label>
+                                <input type="number" class="form-control tire-input" id="tire_600_before" value="0" min="0">
+                            </div>
+                        </div>
+                        <h6 class="mb-2 text-danger">จำนวนจองจอง (แพค) - มาจริง</h6>
+                        <div class="row">
+                            <div class="col">
+                                <label class="text-danger">40</label>
+                                <input type="number" class="form-control tire-input" id="tire_40_after" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label class="text-danger">80</label>
+                                <input type="number" class="form-control tire-input" id="tire_80_after" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label class="text-danger">120</label>
+                                <input type="number" class="form-control tire-input" id="tire_120_after" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label class="text-danger">200</label>
+                                <input type="number" class="form-control tire-input" id="tire_200_after" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label class="text-danger">300</label>
+                                <input type="number" class="form-control tire-input" id="tire_300_after" value="0" min="0">
+                            </div>
+                            <div class="col">
+                                <label class="text-danger">600</label>
+                                <input type="number" class="form-control tire-input" id="tire_600_after" value="0" min="0">
                             </div>
                         </div>
                     </form>
@@ -492,8 +462,8 @@ if (!isset($_SESSION['user_id'])) {
             { title: 'หมายเหตุ', data: 'note' },
             { title: 'คน (ก่อน)', data: 'participants_before' },
             { title: 'คน (จริง)', data: 'participants_after' },
-            { title: 'จองห้องพัก', data: 'reserve_room' },
-            { title: 'ใช้ห้องจริง', data: 'used_room' },
+            { title: 'จองห้องพัก', data: 'reserve_room', render: (data) => data > 0 ? data : '' },
+            { title: 'ใช้ห้องจริง', data: 'used_room', render: (data) => data > 0 ? data : '' },
             { title: 'จอง 40', data: 'tire_40_before' },
             { title: 'จอง 80', data: 'tire_80_before' },
             { title: 'จอง 120', data: 'tire_120_before' },
@@ -505,10 +475,10 @@ if (!isset($_SESSION['user_id'])) {
                        (parseInt(data.tire_120_after) || 0) + (parseInt(data.tire_200_after) || 0) + 
                        (parseInt(data.tire_300_after) || 0) + (parseInt(data.tire_600_after) || 0);
             }},
-            { title: 'ห้องพัก', data: 'room_att' },
-            { title: 'ล่องเรือ', data: 'ship_att' },
-            { title: 'งานเลี้ยงเย็น', data: 'night_att' },
-            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-info" onclick="editItem(${data})">✏️</button>` },
+            { title: 'ห้องพัก', data: 'room_att', render: (data) => data > 0 ? data : '' },
+            { title: 'ล่องเรือ', data: 'ship_att', render: (data) => data > 0 ? data : '' },
+            { title: 'งานเลี้ยงเย็น', data: 'night_att', render: (data) => data > 0 ? data : '' },
+            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-warning" onclick="editItem(${data})">✏️</button>` },
             { title: 'ลบ', data: 'id', render: (data) => `<button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">🗑️</button>` }
         ];
 
@@ -533,10 +503,10 @@ if (!isset($_SESSION['user_id'])) {
                        (parseInt(data.tire_120_after) || 0) + (parseInt(data.tire_200_after) || 0) + 
                        (parseInt(data.tire_300_after) || 0) + (parseInt(data.tire_600_after) || 0);
             }},
-            { title: 'ห้องพัก', data: 'room_att' },
-            { title: 'ล่องเรือ', data: 'ship_att' },
-            { title: 'งานเลี้ยงเย็น', data: 'night_att' },
-            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-info" onclick="editItem(${data})">✏️</button>` },
+            { title: 'ห้องพัก', data: 'room_att', render: (data) => data > 0 ? data : '' },
+            { title: 'ล่องเรือ', data: 'ship_att', render: (data) => data > 0 ? data : '' },
+            { title: 'งานเลี้ยงเย็น', data: 'night_att', render: (data) => data > 0 ? data : '' },
+            { title: 'แก้ไข', data: 'id', render: (data) => `<button class="btn btn-sm btn-warning" onclick="editItem(${data})">✏️</button>` },
             { title: 'ลบ', data: 'id', render: (data) => `<button class="btn btn-sm btn-danger" onclick="deleteItem(${data})">🗑️</button>` }
         ];
 
@@ -665,6 +635,14 @@ if (!isset($_SESSION['user_id'])) {
             updateUseRoomVisibility();
         }
 
+        function updateUseRoomVisibility() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            document.getElementById('useRoomContainer').style.display = type === 'shop' ? 'flex' : 'none';
+            if (type === 'user') {
+                document.getElementById('reserve_room').checked = false;
+            }
+        }
+
         let lastAttendeesData = '';
 
         function loadAttendees() {
@@ -728,6 +706,19 @@ if (!isset($_SESSION['user_id'])) {
                 document.getElementById('totalParticipantsBeforeUser').textContent = userData.total_participants_before || 0;
                 document.getElementById('totalParticipantsAfterUser').textContent = userData.total_participants_after || 0;
                 
+                const shopNotCame = (parseInt(shopData.total_participants_before) || 0) - (parseInt(shopData.total_participants_after) || 0);
+                const userNotCame = (parseInt(userData.total_participants_before) || 0) - (parseInt(userData.total_participants_after) || 0);
+                const shopNotCamePct = shopData.total_participants_before > 0 
+                    ? Math.round(shopNotCame / shopData.total_participants_before * 100) 
+                    : 0;
+                const userNotCamePct = userData.total_participants_before > 0 
+                    ? Math.round(userNotCame / userData.total_participants_before * 100) 
+                    : 0;
+                document.getElementById('totalNotCameShop').textContent = shopNotCame > 0 ? shopNotCame : 0;
+                document.getElementById('totalNotCamePercentShop').textContent = shopNotCamePct + '%';
+                document.getElementById('totalNotCameUser').textContent = userNotCame > 0 ? userNotCame : 0;
+                document.getElementById('totalNotCamePercentUser').textContent = userNotCamePct + '%';
+                
                 document.getElementById('totalUseRoom').textContent = shopData.total_reserve_room || 0;
                 document.getElementById('totalUsedRoom').textContent = shopData.total_used_room || 0;
                 
@@ -762,20 +753,7 @@ if (!isset($_SESSION['user_id'])) {
                 const userTirePct = userTire > 0 ? Math.round(userTireReal / userTire * 100) : 0;
                 document.getElementById('totalTirePercentShop').textContent = shopTirePct + '%';
                 document.getElementById('totalTirePercentUser').textContent = userTirePct + '%';
-
-                // Update Attendance Card
-                document.getElementById('totalRoomAtt').textContent = shopData.total_room_att || 0;
-                document.getElementById('totalShipAtt').textContent = shopData.total_ship_att || 0;
-                document.getElementById('totalNightAtt').textContent = shopData.total_night_att || 0;
-                document.getElementById('totalRoomAttAfter').textContent = shopData.total_room_att_after || 0;
-                document.getElementById('totalShipAttAfter').textContent = shopData.total_ship_att_after || 0;
-                document.getElementById('totalNightAttAfter').textContent = shopData.total_night_att_after || 0;
             });
-        }
-
-        function updateUseRoomVisibility() {
-            const isShop = document.getElementById('type_shop').checked;
-            document.getElementById('useRoomContainer').style.display = isShop ? 'flex' : 'none';
         }
 
         let editingId = 0;
@@ -808,12 +786,18 @@ if (!isset($_SESSION['user_id'])) {
                     document.getElementById('reserve_room').value = item.reserve_room || 0;
                     document.getElementById('used_room').value = item.used_room || 0;
                     
-                    ['40','80','120','200','300','600'].forEach(t => {
-                        const el = document.getElementById('tire_'+t+'_before');
-                        if (el) el.value = item['tire_'+t+'_before'] || 0;
-                        const elAfter = document.getElementById('tire_'+t+'_after');
-                        if (elAfter) elAfter.value = item['tire_'+t+'_after'] || 0;
-                    });
+                    document.getElementById('tire_40_before').value = item.tire_40_before || 0;
+                    document.getElementById('tire_40_after').value = item.tire_40_after || 0;
+                    document.getElementById('tire_80_before').value = item.tire_80_before || 0;
+                    document.getElementById('tire_80_after').value = item.tire_80_after || 0;
+                    document.getElementById('tire_120_before').value = item.tire_120_before || 0;
+                    document.getElementById('tire_120_after').value = item.tire_120_after || 0;
+                    document.getElementById('tire_200_before').value = item.tire_200_before || 0;
+                    document.getElementById('tire_200_after').value = item.tire_200_after || 0;
+                    document.getElementById('tire_300_before').value = item.tire_300_before || 0;
+                    document.getElementById('tire_300_after').value = item.tire_300_after || 0;
+                    document.getElementById('tire_600_before').value = item.tire_600_before || 0;
+                    document.getElementById('tire_600_after').value = item.tire_600_after || 0;
                     document.getElementById('room_att').value = item.room_att || 0;
                     document.getElementById('ship_att').value = item.ship_att || 0;
                     document.getElementById('night_attend').value = item.night_att || 0;
@@ -846,12 +830,18 @@ if (!isset($_SESSION['user_id'])) {
             formData.append('participants_after', document.getElementById('participants_after').value);
             formData.append('reserve_room', document.getElementById('reserve_room').value || 0);
             formData.append('used_room', document.getElementById('used_room').value || 0);
-            ['40','80','120','200','300','600'].forEach(t => {
-                const el = document.getElementById('tire_'+t+'_before');
-                formData.append('tire_'+t+'_before', el ? el.value : 0);
-                const elAfter = document.getElementById('tire_'+t+'_after');
-                formData.append('tire_'+t+'_after', elAfter ? elAfter.value : 0);
-            });
+            formData.append('tire_40_before', document.getElementById('tire_40_before').value);
+            formData.append('tire_40_after', document.getElementById('tire_40_after').value);
+            formData.append('tire_80_before', document.getElementById('tire_80_before').value);
+            formData.append('tire_80_after', document.getElementById('tire_80_after').value);
+            formData.append('tire_120_before', document.getElementById('tire_120_before').value);
+            formData.append('tire_120_after', document.getElementById('tire_120_after').value);
+            formData.append('tire_200_before', document.getElementById('tire_200_before').value);
+            formData.append('tire_200_after', document.getElementById('tire_200_after').value);
+            formData.append('tire_300_before', document.getElementById('tire_300_before').value);
+            formData.append('tire_300_after', document.getElementById('tire_300_after').value);
+            formData.append('tire_600_before', document.getElementById('tire_600_before').value);
+            formData.append('tire_600_after', document.getElementById('tire_600_after').value);
             formData.append('room_att', document.getElementById('room_att').value || 0);
             formData.append('ship_att', document.getElementById('ship_att').value || 0);
             formData.append('night_attend', document.getElementById('night_attend').value || 0);

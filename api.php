@@ -125,7 +125,7 @@ function addAttendee() {
     $tire_300_after = $_POST['tire_300_after'] ?? 0;
     $tire_600_before = $_POST['tire_600_before'] ?? 0;
     $tire_600_after = $_POST['tire_600_after'] ?? 0;
-    $room_att = intval($_POST['room_att'] ?? 0);
+$room_att = intval($_POST['room_att'] ?? 0);
     $ship_att = intval($_POST['ship_att'] ?? 0);
     $night_att = intval($_POST['night_attend'] ?? 0);
     $room_att_after = intval($_POST['room_att_after'] ?? 0);
