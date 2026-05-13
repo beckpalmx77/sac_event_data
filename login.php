@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/connect_db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -13,11 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user && password_verify($password, $user['password'])) {
-            session_start();
+            session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['role'] = $user['role'];
+            
+            require_once 'config/functions.php';
+            load_user_permissions($user['id']);
             
             header('Location: select_event');
             exit;
@@ -144,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="login-body">
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-circle"></i> <?= $error ?>
+                        <i class="bi bi-exclamation-circle"></i> <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>
                 

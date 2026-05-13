@@ -5,12 +5,12 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if ($_SESSION['role'] !== 'admin') {
-    echo '<script>alert("ไม่มีสิทธิ์เข้าถึง"); window.location.href="main";</script>';
-    exit;
-}
-
 require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
+require_permission('manage_user');
 
 $message = '';
 $error = '';
@@ -34,6 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'ชื่อผู้ใช้ซ้ำ';
             }
         }
+    } elseif (isset($_POST['update_user'])) {
+        $user_id = intval($_POST['user_id'] ?? 0);
+        $new_role = $_POST['role'] ?? '';
+        $new_full_name = $_POST['full_name'] ?? '';
+        if ($user_id > 0 && in_array($new_role, ['admin', 'user'])) {
+            $stmt = $conn->prepare("UPDATE ims_user SET role = ?, full_name = ? WHERE id = ?");
+            $stmt->execute([$new_role, $new_full_name, $user_id]);
+            $message = 'อัปเดตสิทธิ์ผู้ใช้สำเร็จ';
+        }
     } elseif (isset($_POST['delete_user'])) {
         $user_id = $_POST['user_id'] ?? 0;
         if ($user_id != $_SESSION['user_id']) {
@@ -55,16 +64,47 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>จัดการผู้ใช้</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-    <style>body{font-family:'Kanit',sans-serif;background:#f8f9fa}</style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .main-card .card-header { background: #f0f0f0; color: #0d6efd; padding: 20px 25px; border-bottom: 1px solid #dee2e6; }
+        .main-card .card-body { padding: 20px; }
+        
+        @media (max-width: 576px) {
+            .container { padding: 10px; }
+        }
+        @media (max-width: 768px) {
+            .table th, .table td { font-size: 12px; padding: 5px; }
+            .btn-sm { font-size: 10px; padding: 3px 6px; }
+        }
+        .table td, .table th { vertical-align: middle; }
+    </style>
 </head>
 <body>
-    <div class="container py-4">
-        <div class="d-flex align-items-center gap-2 mb-4">
-            <img src="img/logo/logo text-01.png" alt="Logo" style="height: 40px;">
-            <h3 class="m-0">👥 จัดการผู้ใช้</h3>
-        </div>
+    <div class="container-fluid py-3 px-4">
+        <div class="main-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
+                    <h5 class="m-0" style="color:#0d6efd">👥 จัดการผู้ใช้</h5>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="me-2 text-muted"><?= htmlspecialchars($_SESSION['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="me-2 text-muted small" id="headerClock"></span>
+                    <?php nav_link('manage_permission', '🔐 จัดการสิทธิ์', 'manage_permission'); ?>
+                    <?php nav_link('manage_event', '📅 จัดการ Event', 'manage_event'); ?>
+                    <?php nav_link('dashboard', '📊 Dashboard', 'dashboard'); ?>
+                    <a href="main" class="btn btn-outline-secondary btn-sm">🏠 หน้าหลัก</a>
+                    <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
+                </div>
+            </div>
+            <div class="card-body">
         
         <?php if ($message): ?>
             <div class="alert alert-success"><?= $message ?></div>
@@ -107,8 +147,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <thead>
                         <tr>
                             <th>ชื่อผู้ใช้</th>
-                            <th>ชื่อ-นามสกุล</th>
-                            <th>สิทธิ์</th>
+                            <th>ชื่อ-นามสกุล / สิทธิ์</th>
                             <th>วันที่สร้าง</th>
                             <th>จัดการ</th>
                         </tr>
@@ -116,11 +155,24 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <tbody>
                         <?php foreach ($users as $user): ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['username']) ?></td>
-                            <td><?= htmlspecialchars($user['full_name'] ?? '-') ?></td>
-                            <td><?= $user['role'] === 'admin' ? 'ผู้ดูแล' : 'ผู้ใช้' ?></td>
-                            <td><?= $user['created_at'] ?></td>
+                            <td class="align-middle"><?= htmlspecialchars($user['username']) ?></td>
                             <td>
+                                <form method="POST" class="d-flex align-items-center gap-1">
+                                    <input type="hidden" name="update_user" value="1">
+                                    <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                    <input type="text" class="form-control form-control-sm" name="full_name" value="<?= htmlspecialchars($user['full_name'] ?? '') ?>" style="min-width:100px;width:auto" placeholder="ชื่อ">
+                                    <select class="form-select form-select-sm" name="role" style="width:80px">
+                                        <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>ผู้ใช้</option>
+                                        <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="บันทึก">💾</button>
+                                </form>
+                            </td>
+                            <td class="align-middle"><?= $user['created_at'] ?></td>
+                            <td>
+                                <?php if (has_permission('manage_permission')): ?>
+                                <a href="manage_permission?user_id=<?= $user['id'] ?>" class="btn btn-sm btn-info">สิทธิ์</a>
+                                <?php endif; ?>
                                 <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                 <form method="POST" class="d-inline" onsubmit="return confirm('ยืนยันการลบ?')">
                                     <input type="hidden" name="delete_user" value="1">
@@ -138,10 +190,14 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
         
-        <div class="mt-3">
-            <a href="main" class="btn btn-secondary">กลับ</a>
-            <a href="change_password" class="btn btn-warning">เปลี่ยนรหัสผ่าน</a>
-        </div>
     </div>
+</div>
+<script>
+    function updateClock() {
+        document.getElementById('headerClock').textContent = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>
 </body>
 </html>

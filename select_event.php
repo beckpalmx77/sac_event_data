@@ -6,6 +6,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_event'])) {
     $_SESSION['event_id'] = $_POST['event_id'];
@@ -15,9 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_event'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_event'])) {
     $event_name = $_POST['event_name'] ?? '';
+    $event_date = $_POST['event_date'] ?? null;
+    $event_location = $_POST['event_location'] ?? null;
     if (!empty($event_name)) {
-        $stmt = $conn->prepare("INSERT INTO events (event_name) VALUES (?)");
-        $stmt->execute([$event_name]);
+        $stmt = $conn->prepare("INSERT INTO events (event_name, event_date, event_location) VALUES (?, ?, ?)");
+        $stmt->execute([$event_name, $event_date, $event_location]);
         $new_event_id = $conn->lastInsertId();
         
         $stmt = $conn->prepare("INSERT INTO summary (event_id) VALUES (?)");
@@ -124,7 +130,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0 text-primary">สร้างงานใหม่</h5>
-                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                        <?php if (has_permission('manage_event')): ?>
                         <a href="manage_event" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-gear"></i> จัดการงาน
                         </a>
@@ -134,6 +140,8 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <input type="hidden" name="create_event" value="1">
                     <div class="input-group">
                         <input type="text" class="form-control" name="event_name" placeholder="ชื่องาน Event" required>
+                    <input type="date" class="form-control" name="event_date" placeholder="วันที่จัด" style="max-width:180px">
+                    <input type="text" class="form-control" name="event_location" placeholder="สถานที่" style="max-width:200px">
                         <button class="btn btn-create" type="submit">
                             <i class="bi bi-plus-circle"></i> สร้าง
                         </button>
@@ -159,9 +167,12 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <strong>📅 <?= htmlspecialchars($event['event_name']) ?></strong>
                                         <div class="text-muted small">
                                             <?php if ($event['event_date']): ?>
-                                                📆 วันที่จัด: <?= date('d/m/Y', strtotime($event['event_date'])) ?>
+                                                📆 <?= date('d/m/Y', strtotime($event['event_date'])) ?>
                                             <?php else: ?>
                                                 <?= $event['created_at'] ?>
+                                            <?php endif; ?>
+                                            <?php if ($event['event_location']): ?>
+                                                &nbsp;|&nbsp; 📍 <?= htmlspecialchars($event['event_location'], ENT_QUOTES, 'UTF-8') ?>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -174,9 +185,12 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
             </div>
             
-            <div class="mt-4 text-center">
-                <?php if ($_SESSION['role'] === 'admin'): ?>
-                <a href="manage_event" class="btn btn-outline-primary logout-btn me-2">
+            <div class="mt-4 text-center d-flex justify-content-center gap-2">
+                <a href="main" class="btn btn-outline-secondary logout-btn">
+                    <i class="bi bi-house-door"></i> กลับหน้าหลัก
+                </a>
+                <?php if (has_permission('manage_event')): ?>
+                <a href="manage_event" class="btn btn-outline-primary logout-btn">
                     <i class="bi bi-gear"></i> จัดการงาน Event
                 </a>
                 <?php endif; ?>

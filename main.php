@@ -5,6 +5,24 @@ if (!isset($_SESSION['user_id'])) {
 
     exit;
 }
+require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
+
+$event_name = '';
+$event_date = '';
+if (!empty($_SESSION['event_id'])) {
+    $stmt = $conn->prepare("SELECT event_name, event_date, event_location FROM events WHERE id = ?");
+    $stmt->execute([$_SESSION['event_id']]);
+    $event_row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($event_row) {
+        $event_name = $event_row['event_name'];
+        $event_date = $event_row['event_date'];
+        $event_location = $event_row['event_location'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -55,15 +73,23 @@ if (!isset($_SESSION['user_id'])) {
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
-                    <h5 class="m-0" style="color:#0d6efd">บันทึกข้อมูลงาน Event</h5>
+                    <h5 class="m-0" style="color:#0d6efd">บันทึกข้อมูล : <?= htmlspecialchars($event_name ?: 'งาน Event', ENT_QUOTES, 'UTF-8') ?></h5>
+                    <?php if ($event_name): ?>
+                        <div class="ms-3 ps-3 border-start small text-muted">
+                            <?php if ($event_date): ?><div><i class="bi bi-calendar3"></i> <?= date('d/m/Y', strtotime($event_date)) ?></div><?php endif; ?>
+                            <?php if ($event_location): ?><div><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($event_location, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="me-2 text-muted"><?= $_SESSION['full_name'] ?? '' ?></span>
-                    <a href="dashboard" class="btn btn-info btn-sm">📊 Dashboard</a>
-                    <?php if ($_SESSION['role'] === 'admin'): ?>
-                    <a href="manage_event" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
-                    <a href="manage_user" class="btn btn-warning btn-sm">👥 จัดการ</a>
-                    <?php endif; ?>
+                    <span class="me-2 text-muted"><?= htmlspecialchars($_SESSION['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="me-2 text-muted small" id="headerClock"></span>
+                    <?php nav_link('dashboard', '📊 Dashboard', 'dashboard'); ?>
+                    <?php nav_link('dashboard_graph', '📈 กราฟ', 'dashboard_graph'); ?>
+                    <?php nav_link('dashboard-by-sales', '📊 แยกเซลส์', 'dashboard_by_sales'); ?>
+                    <?php nav_link('manage_event', '📅 จัดการ Event', 'manage_event'); ?>
+                    <?php nav_link('manage_user', '👥 จัดการผู้ใช้', 'manage_user'); ?>
+                    <?php nav_link('manage_permission', '🔐 จัดการสิทธิ์', 'manage_permission'); ?>
                     <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
                     <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
@@ -157,18 +183,25 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </div>
 
-        <button class="btn btn-primary btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#addModal" onclick="openModal()">
-            + เพิ่มรายการ
-        </button>
-        <button class="btn btn-success btn-lg mb-3 ms-2" onclick="exportCSV('shop')">
-            📥 Export ร้านค้า
-        </button>
-        <button class="btn btn-success btn-lg mb-3 ms-2" onclick="exportCSV('user')">
-            📥 Export ผู้ใช้
-        </button>
-        <button class="btn btn-warning btn-lg mb-3 ms-2" onclick="window.open('export_excel?event_id=' + eventId, '_blank')">
-            📊 Export Excel
-        </button>
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addModal" onclick="openModal()">
+                + เพิ่มรายการ
+            </button>
+            <?php if (has_permission('export_csv')): ?>
+            <button class="btn btn-success btn-lg ms-2" onclick="exportCSV('shop')">
+                📥 Export ร้านค้า
+            </button>
+            <button class="btn btn-success btn-lg ms-2" onclick="exportCSV('user')">
+                📥 Export ผู้ใช้
+            </button>
+            <?php endif; ?>
+            <?php if (has_permission('export_excel')): ?>
+            <button class="btn btn-warning btn-lg ms-2" onclick="window.open('export_excel?event_id=' + eventId, '_blank')">
+                📊 Export Excel
+            </button>
+            <?php endif; ?>
+            <span class="ms-auto text-muted small" id="lastUpdateTime"></span>
+        </div>
 
         <ul class="nav nav-tabs mb-3" id="dataTab" role="tablist">
             <li class="nav-item" role="presentation">
@@ -248,32 +281,6 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </div>
 
-        <div class="table-responsive d-none">
-            <table class="table table-bordered table-hover" id="dataTable" style="width:100%">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ลำดับ</th>
-                        <th>เซลส์</th>
-                        <th>ลำดับในเซลส์</th>
-                        <th>รายชื่อ</th>
-                        <th>ประเภท</th>
-                        <th>จังหวัด</th>
-                        <th>หมายเหตุ</th>
-                                <th>คน (ก่อน)</th>
-                                <th>คน (จริง)</th>
-                                <th>จอง 40</th>
-                        <th>จอง 80</th>
-                        <th>จอง 120</th>
-                        <th>จอง 200</th>
-                        <th>จอง 300</th>
-                        <th>จอง 600</th>
-                        <th>จองจริง</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
     </div>
 </div>
 
@@ -701,6 +708,8 @@ if (!isset($_SESSION['user_id'])) {
                 
                 tableUser.rows.add(userData);
                 tableUser.draw();
+
+                fetchLastUpdate();
             });
         }
 
@@ -742,6 +751,13 @@ if (!isset($_SESSION['user_id'])) {
                 const userPct = userData.total_participants_before > 0 
                     ? Math.round(userData.total_participants_after / userData.total_participants_before * 100) 
                     : 0;
+                const shopNotCame = (shopData.total_shops || 0) - (shopData.shops_came || 0);
+                const userNotCame = (userData.total_shops || 0) - (userData.shops_came || 0);
+                document.getElementById('totalNotCameShop').textContent = shopNotCame;
+                document.getElementById('totalNotCameUser').textContent = userNotCame;
+                document.getElementById('totalNotCamePercentShop').textContent = (shopData.total_shops > 0 ? Math.round(shopNotCame / shopData.total_shops * 100) : 0) + '%';
+                document.getElementById('totalNotCamePercentUser').textContent = (userData.total_shops > 0 ? Math.round(userNotCame / userData.total_shops * 100) : 0) + '%';
+
                 document.getElementById('totalPercentShop').textContent = shopPct + '%';
                 document.getElementById('totalPercentUser').textContent = userPct + '%';
                 
@@ -768,13 +784,28 @@ if (!isset($_SESSION['user_id'])) {
                 document.getElementById('totalTirePercentShop').textContent = shopTirePct + '%';
                 document.getElementById('totalTirePercentUser').textContent = userTirePct + '%';
 
-                // Attendance Card (reserved for future UI elements)
             });
         }
 
         function updateUseRoomVisibility() {
             const isShop = document.getElementById('type_shop').checked;
             document.getElementById('useRoomContainer').style.display = isShop ? 'flex' : 'none';
+        }
+
+        function fetchLastUpdate() {
+            fetch('api.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=get_last_update&event_id=' + eventId
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.updated_at) {
+                    const d = new Date(data.updated_at);
+                    const pad = n => String(n).padStart(2, '0');
+                    document.getElementById('lastUpdateTime').textContent = '🔄 อัปเดตล่าสุด: ' + pad(d.getDate()) + '-' + pad(d.getMonth()+1) + '-' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+                }
+            });
         }
 
         let editingId = 0;
@@ -903,6 +934,13 @@ if (!isset($_SESSION['user_id'])) {
         function exportCSV(type) {
             window.open('export.php?type=' + type + '&event_id=' + eventId, '_blank');
         }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('headerClock').textContent = now.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
     </script>
 </body>
 </html>

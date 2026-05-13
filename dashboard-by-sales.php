@@ -4,6 +4,26 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login');
     exit;
 }
+require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
+require_permission('dashboard_by_sales');
+
+$event_name = '';
+$event_date = '';
+$event_location = '';
+if (!empty($_SESSION['event_id'])) {
+    $stmt = $conn->prepare("SELECT event_name, event_date, event_location FROM events WHERE id = ?");
+    $stmt->execute([$_SESSION['event_id']]);
+    $event_row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($event_row) {
+        $event_name = $event_row['event_name'];
+        $event_date = $event_row['event_date'];
+        $event_location = $event_row['event_location'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -14,9 +34,13 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #f8f9fa; }
+        body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .main-card .card-header { background: #f0f0f0; color: #0d6efd; padding: 20px 25px; border-bottom: 1px solid #dee2e6; }
+        .main-card .card-body { padding: 20px; }
         .chart-container { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative; }
         .province-list { max-height: 300px; overflow-y: auto; }
 
@@ -25,19 +49,46 @@ if (!isset($_SESSION['user_id'])) {
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         @media (max-width: 576px) {
+            .container { padding: 10px; }
             h2 { font-size: 18px; }
         }
+        @media (max-width: 768px) {
+            .table th, .table td { font-size: 12px; padding: 5px; }
+            .btn-sm { font-size: 10px; padding: 3px 6px; }
+        }
+        .table td, .table th { vertical-align: middle; }
     </style>
 </head>
 <body>
-<div class="container-fluid py-3 px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📊 Dashboard สรุปสถิติ</h2>
-        <div id="refresh-status">
-            <span class="dot"></span> อัปเดตล่าสุด: <span id="last-update">-</span>
-        </div>
-    </div>
-
+    <div class="container-fluid py-3 px-4">
+        <div class="main-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
+                    <h5 class="m-0" style="color:#0d6efd">📊 Dashboard สรุปสถิติ (แยกตามเซลส์)</h5>
+                    <?php if ($event_name): ?>
+                        <div class="ms-3 ps-3 border-start small text-muted">
+                            <div><?= htmlspecialchars($event_name, ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php if ($event_date): ?><div><i class="bi bi-calendar3"></i> <?= date('d/m/Y', strtotime($event_date)) ?></div><?php endif; ?>
+                            <?php if ($event_location): ?><div><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($event_location, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="me-2 text-muted"><?= htmlspecialchars($_SESSION['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="me-2 text-muted small" id="headerClock"></span>
+                    <?php nav_link('dashboard', '📊 Dashboard', 'dashboard'); ?>
+                    <?php nav_link('dashboard_graph', '📈 กราฟ', 'dashboard_graph'); ?>
+                    <?php nav_link('manage_event', '📅 จัดการ Event', 'manage_event'); ?>
+                    <?php nav_link('manage_user', '👥 จัดการผู้ใช้', 'manage_user'); ?>
+                    <?php nav_link('manage_permission', '🔐 จัดการสิทธิ์', 'manage_permission'); ?>
+                    <a href="main" class="btn btn-outline-secondary btn-sm">🏠 หน้าหลัก</a>
+                    <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
+                </div>
+            </div>
+            <div class="card-body">
+    
     <ul class="nav nav-tabs mb-3" id="dashTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="shop-tab" data-bs-toggle="tab" data-bs-target="#shop" type="button">🏪 ร้านค้า</button>
@@ -89,10 +140,14 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     function loadData() {
+        let body = 'action=get_event';
+        if (eventId > 0) {
+            body += '&event_id=' + eventId;
+        }
         fetch('api.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'action=get_event'
+            body: body
         })
             .then(res => res.json())
             .then(data => {
@@ -302,6 +357,14 @@ if (!isset($_SESSION['user_id'])) {
             });
         }
     }
+
+    function updateClock() {
+        document.getElementById('headerClock').textContent = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 </script>
+    </div>
+</div>
 </body>
 </html>

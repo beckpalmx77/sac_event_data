@@ -6,11 +6,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once 'config/connect_db.php';
-
-if ($_SESSION['role'] !== 'admin') {
-    header('Location: main');
-    exit;
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
 }
+require_permission('manage_event');
 
 $message = '';
 $message_type = '';
@@ -19,9 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['create_event'])) {
         $event_name = trim($_POST['event_name'] ?? '');
         $event_date = $_POST['event_date'] ?? null;
+        $event_location = $_POST['event_location'] ?? null;
         if (!empty($event_name)) {
-            $stmt = $conn->prepare("INSERT INTO events (event_name, event_date) VALUES (?, ?)");
-            $stmt->execute([$event_name, $event_date]);
+            $stmt = $conn->prepare("INSERT INTO events (event_name, event_date, event_location) VALUES (?, ?, ?)");
+            $stmt->execute([$event_name, $event_date, $event_location]);
             $new_event_id = $conn->lastInsertId();
             
             $stmt = $conn->prepare("INSERT INTO summary (event_id) VALUES (?)");
@@ -34,9 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $event_id = $_POST['event_id'] ?? 0;
         $event_name = trim($_POST['event_name'] ?? '');
         $event_date = $_POST['event_date'] ?? null;
+        $event_location = $_POST['event_location'] ?? null;
         if (!empty($event_name) && $event_id > 0) {
-            $stmt = $conn->prepare("UPDATE events SET event_name = ?, event_date = ? WHERE id = ?");
-            $stmt->execute([$event_name, $event_date, $event_id]);
+            $stmt = $conn->prepare("UPDATE events SET event_name = ?, event_date = ?, event_location = ? WHERE id = ?");
+            $stmt->execute([$event_name, $event_date, $event_location, $event_id]);
             $message = 'แก้ไขงาน Event สำเร็จ';
             $message_type = 'success';
         }
@@ -76,19 +78,28 @@ if (isset($_GET['edit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>จัดการงาน Event</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .main-card .card-header { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; padding: 20px 25px; }
-        .main-card .card-body { padding: 25px; }
+        .main-card .card-header { background: #f0f0f0; color: #0d6efd; padding: 20px 25px; border-bottom: 1px solid #dee2e6; }
+        .main-card .card-body { padding: 20px; }
         .event-card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 15px; transition: all 0.3s ease; }
         .event-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .btn-action { width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+        
+        @media (max-width: 576px) {
+            .container { padding: 10px; }
+        }
+        @media (max-width: 768px) {
+            .table th, .table td { font-size: 12px; padding: 5px; }
+            .btn-sm { font-size: 10px; padding: 3px 6px; }
+        }
+        .table td, .table th { vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -97,17 +108,24 @@ if (isset($_GET['edit'])) {
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
-                    <h5 class="m-0 text-white">📅 จัดการงาน Event</h5>
+                    <h5 class="m-0" style="color:#0d6efd">📅 จัดการงาน Event</h5>
                 </div>
-                <div>
-                    <a href="main" class="btn btn-info btn-sm">🏠 กลับหน้าหลัก</a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="me-2 text-muted"><?= htmlspecialchars($_SESSION['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="me-2 text-muted small" id="headerClock"></span>
+                    <?php nav_link('manage_user', '👥 จัดการผู้ใช้', 'manage_user'); ?>
+                    <?php nav_link('manage_permission', '🔐 จัดการสิทธิ์', 'manage_permission'); ?>
+                    <?php nav_link('dashboard', '📊 Dashboard', 'dashboard'); ?>
+                    <a href="main" class="btn btn-outline-secondary btn-sm">🏠 หน้าหลัก</a>
+                    <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
             </div>
             
             <div class="card-body">
                 <?php if ($message): ?>
                     <div class="alert alert-<?= $message_type === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show" role="alert">
-                        <?= $message ?>
+                        <?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <?php endif; ?>
@@ -138,6 +156,12 @@ if (isset($_GET['edit'])) {
                                         <label class="form-label">วันที่จัดงาน</label>
                                         <input type="date" class="form-control" name="event_date" 
                                                value="<?= $edit_event ? $edit_event['event_date'] : '' ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">สถานที่จัดงาน</label>
+                                        <input type="text" class="form-control" name="event_location" 
+                                               value="<?= $edit_event ? htmlspecialchars($edit_event['event_location'] ?? '') : '' ?>" 
+                                               placeholder="กรุณากรอกสถานที่จัดงาน">
                                     </div>
                                     
                                     <div class="d-flex gap-2">
@@ -172,6 +196,7 @@ if (isset($_GET['edit'])) {
                                                     <th class="text-center" style="width:60px">ลำดับ</th>
                                                     <th>ชื่องาน</th>
                                                     <th>วันที่จัดงาน</th>
+                                                    <th>สถานที่</th>
                                                     <th>วันที่สร้าง</th>
                                                     <th class="text-center" style="width:180px">จัดการ</th>
                                                 </tr>
@@ -182,6 +207,7 @@ if (isset($_GET['edit'])) {
                                                     <td class="text-center"><?= $index + 1 ?></td>
                                                     <td><strong><?= htmlspecialchars($event['event_name']) ?></strong></td>
                                                     <td><?= $event['event_date'] ? date('d/m/Y', strtotime($event['event_date'])) : '-' ?></td>
+                                                    <td><?= htmlspecialchars($event['event_location'] ?? '-') ?></td>
                                                     <td><?= date('d/m/Y H:i', strtotime($event['created_at'])) ?></td>
                                                     <td class="text-center">
                                                         <form method="POST" class="d-inline">
@@ -251,6 +277,12 @@ if (isset($_GET['edit'])) {
             document.getElementById('deleteEventName').textContent = name;
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }
+
+        function updateClock() {
+            document.getElementById('headerClock').textContent = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
     </script>
 </body>
 </html>

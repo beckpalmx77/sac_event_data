@@ -1,6 +1,16 @@
 <?php
 date_default_timezone_set("Asia/Bangkok");
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login');
+    exit;
+}
 require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
+require_permission('import_csv');
 
 if (!isset($_GET['confirm']) || $_GET['confirm'] !== 'yes') {
     echo "<h3>กรุณาตรวจสอบก่อน import</h3>";
@@ -76,9 +86,10 @@ function importCSV($file, $type) {
 $shopCount = importCSV('data_shop1.csv', 'shop');
 $userCount = importCSV('data_user2.csv', 'user');
 
-$stmt = $conn->query("
+$stmt = $conn->prepare("
     SELECT 
         COUNT(*) as total_shops,
+        SUM(CASE WHEN participants_after > 0 THEN 1 ELSE 0 END) as shops_came,
         SUM(CASE WHEN type = 'shop' THEN 1 ELSE 0 END) as shop_count,
         SUM(CASE WHEN type = 'user' THEN 1 ELSE 0 END) as user_count,
         COALESCE(SUM(participants_before), 0) as total_participants_before,
@@ -96,8 +107,9 @@ $stmt = $conn->query("
         COALESCE(SUM(tire_200_after), 0) as total_tire_200_after,
         COALESCE(SUM(tire_300_after), 0) as total_tire_300_after,
         COALESCE(SUM(tire_600_after), 0) as total_tire_600_after
-    FROM attendees WHERE event_id = $event_id
+    FROM attendees WHERE event_id = ?
 ");
+$stmt->execute([$event_id]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $total_tire_before = $result['total_tire_40_before'] + $result['total_tire_80_before'] + $result['total_tire_120_before'] 
@@ -107,7 +119,7 @@ $total_tire_after = $result['total_tire_40_after'] + $result['total_tire_80_afte
 
 $stmt = $conn->prepare("
     UPDATE summary SET 
-        total_shops = ?, 
+        total_shops = ?, shops_came = ?,
         total_participants_before = ?, total_participants_after = ?, 
         total_reserve_room = ?,
         total_tire_40_before = ?, total_tire_40_after = ?,
@@ -121,7 +133,7 @@ $stmt = $conn->prepare("
 ");
 
 $stmt->execute([
-    $result['total_shops'], 
+    $result['total_shops'], $result['shops_came'],
     $result['total_participants_before'], $result['total_participants_after'],
     $result['total_reserve_room'],
     $result['total_tire_40_before'], $result['total_tire_40_after'],

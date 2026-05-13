@@ -1,0 +1,3 @@
+config/db_value.inc
+*.log
+docs/

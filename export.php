@@ -5,6 +5,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+if (!isset($_SESSION['permissions'])) {
+    load_user_permissions($_SESSION['user_id']);
+}
+require_permission('export_csv');
 
 $event_id = $_GET['event_id'] ?? 0;
 $type = $_GET['type'] ?? 'shop';

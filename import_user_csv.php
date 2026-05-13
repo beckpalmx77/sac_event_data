@@ -1,6 +1,13 @@
 <?php
 date_default_timezone_set("Asia/Bangkok");
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login');
+    exit;
+}
 require_once 'config/connect_db.php';
+require_once 'config/functions.php';
+require_permission('import_csv');
 
 if (!isset($_GET['confirm']) || $_GET['confirm'] !== 'yes') {
     echo "<h3>Update ข้อมูลผู้ใช้จาก sac_customer_event.csv</h3>";
