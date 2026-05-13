@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="login-footer">
-                <p class="mb-0">© 2026 SAC Event Management System</p>
+                <p class="mb-0"><span>copyright &copy; <script> document.write(new Date().getFullYear()); </script> SAC Event Management System</p>
             </div>
         </div>
     </div>
