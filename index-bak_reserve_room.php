@@ -351,16 +351,11 @@ if (!isset($_SESSION['user_id'])) {
                                         <input type="number" class="form-control" id="participants_after" value="0">
                                     </div>
                                 </div>
-                        <div class="row mb-2" id="useRoomContainer">
-                            <div class="col-md-6">
-                                <label class="form-label">จองห้องพัก</label>
-                                <input type="number" class="form-control" id="reserve_room" value="0" min="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ใช้ห้องจริง</label>
-                                <input type="number" class="form-control" id="used_room" value="0" min="0">
-                            </div>
-                        </div>
+                                <div class="row mb-2" id="useRoomContainer">
+                                    <div class="col-md-6">
+                                        <label class="form-label">จองห้องพัก</label>
+                                        <input type="number" class="form-control" id="reserve_room" value="0" min="0">
+                                    </div>
                                     <div class="col-md-6">
                                         <label class="text-danger">ใช้ห้องจริง</label>
                                         <input type="number" class="form-control" id="used_room" value="0" min="0">
