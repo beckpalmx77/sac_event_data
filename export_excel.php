@@ -14,7 +14,8 @@ if (!$event_id) {
 }
 
 $eventName = 'Event Data';
-$stmt = $conn->query("SELECT event_name FROM events WHERE id = $event_id");
+$stmt = $conn->prepare("SELECT event_name FROM events WHERE id = ?");
+$stmt->execute([$event_id]);
 $event = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($event) {
     $eventName = $event['event_name'];
@@ -69,9 +70,6 @@ function getSheetData($type, $conn, $columns, $event_id) {
             $val = $row[$col] ?? '';
             if ($col === 'type') {
                 $val = ($val === 'user') ? 'ผู้ใช้' : 'ร้านค้า';
-            }
-            if (is_numeric($val) && $val == 0) {
-                $val = '';
             }
             $line[] = $val;
         }

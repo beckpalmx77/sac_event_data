@@ -97,12 +97,23 @@ if (!isset($_SESSION['user_id'])) {
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let eventId = 0;
+    let eventId = <?= intval($_SESSION['event_id'] ?? 0) ?>;
     let shopData = null;
     let userData = null;
 
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_event' })
+        loadGraphData();
+        setInterval(loadGraphData, 5000);
+    });
+
+    let lastGraphData = '';
+
+    function loadGraphData() {
+        let body = 'action=get_event';
+        if (eventId > 0) {
+            body += '&event_id=' + eventId;
+        }
+        fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: body })
             .then(res => res.json())
             .then(data => {
                 eventId = data.id;
@@ -111,6 +122,10 @@ if (!isset($_SESSION['user_id'])) {
                     fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_dashboard_summary&event_id=' + eventId + '&type=user' }).then(r => r.json()),
                     fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_dashboard_summary&event_id=' + eventId + '&type=all' }).then(r => r.json())
                 ]).then(([shop, user, all]) => {
+                    const newData = JSON.stringify({shop, user, all});
+                    if (lastGraphData === newData) return;
+                    lastGraphData = newData;
+
                     shopData = shop;
                     userData = user;
                     initCharts('shop', shop);
@@ -118,7 +133,7 @@ if (!isset($_SESSION['user_id'])) {
                     initOverallChart(all);
                 });
             });
-    });
+    }
 
     function initCharts(type, data) {
         const beforeColor = 'rgba(255, 193, 7, 0.8)';

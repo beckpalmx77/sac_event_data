@@ -51,13 +51,26 @@ function logout() {
 
 function getEvent() {
     global $conn;
+    $event_id = $_POST['event_id'] ?? 0;
+    
+    if ($event_id > 0) {
+        $stmt = $conn->prepare("SELECT * FROM events WHERE id = ?");
+        $stmt->execute([$event_id]);
+        $event = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($event) {
+            echo json_encode($event);
+            return;
+        }
+    }
+    
     $stmt = $conn->query("SELECT * FROM events ORDER BY id DESC LIMIT 1");
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$event) {
         $stmt = $conn->query("INSERT INTO events (event_name) VALUES ('งานEvent')");
         $event_id = $conn->lastInsertId();
-        $stmt = $conn->query("SELECT * FROM events WHERE id = $event_id");
+        $stmt = $conn->prepare("SELECT * FROM events WHERE id = ?");
+        $stmt->execute([$event_id]);
         $event = $stmt->fetch(PDO::FETCH_ASSOC);
         
         $stmt = $conn->prepare("INSERT INTO summary (event_id) VALUES (?)");
@@ -125,7 +138,7 @@ function addAttendee() {
     $tire_300_after = $_POST['tire_300_after'] ?? 0;
     $tire_600_before = $_POST['tire_600_before'] ?? 0;
     $tire_600_after = $_POST['tire_600_after'] ?? 0;
-$room_att = intval($_POST['room_att'] ?? 0);
+    $room_att = intval($_POST['room_att'] ?? 0);
     $ship_att = intval($_POST['ship_att'] ?? 0);
     $night_att = intval($_POST['night_attend'] ?? 0);
     $room_att_after = intval($_POST['room_att_after'] ?? 0);
@@ -164,7 +177,7 @@ $room_att = intval($_POST['room_att'] ?? 0);
 function updateSummary($event_id) {
     global $conn;
     
-$stmt = $conn->query("
+    $stmt = $conn->prepare("
         SELECT 
             SUM(CASE WHEN type='shop' THEN 1 ELSE 0 END) as total_shops,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
@@ -189,8 +202,9 @@ $stmt = $conn->query("
             COALESCE(SUM(room_att_after), 0) as total_room_att_after,
             COALESCE(SUM(ship_att_after), 0) as total_ship_att_after,
             COALESCE(SUM(night_att_after), 0) as total_night_att_after
-        FROM attendees WHERE event_id = $event_id
+        FROM attendees WHERE event_id = ?
     ");
+    $stmt->execute([$event_id]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     
     $total_tire_before = $result['total_tire_40_before'] + $result['total_tire_80_before'] + $result['total_tire_120_before'] 
@@ -248,7 +262,8 @@ function getSummary() {
     global $conn;
     $event_id = $_POST['event_id'] ?? 0;
     
-    $stmt = $conn->query("SELECT * FROM summary WHERE event_id = $event_id");
+    $stmt = $conn->prepare("SELECT * FROM summary WHERE event_id = ?");
+    $stmt->execute([$event_id]);
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
     
     echo json_encode($summary);
@@ -259,14 +274,17 @@ function getDashboardSummary() {
     $event_id = intval($_POST['event_id'] ?? 0);
     $type = $_POST['type'] ?? 'all';
     
-    $type_condition = '';
+    $params = [$event_id];
+    $type_filter = '';
     if ($type === 'shop' || $type === 'user') {
-        $type_condition = "AND type = '$type'";
+        $type_filter = 'AND type = ?';
+        $params[] = $type;
     }
     
-    $stmt = $conn->query("
+    $stmt = $conn->prepare("
         SELECT 
             COUNT(*) as total_shops,
+            SUM(CASE WHEN participants_after > 0 THEN 1 ELSE 0 END) as shops_came,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
             COALESCE(SUM(reserve_room), 0) as total_reserve_room,
@@ -289,12 +307,13 @@ function getDashboardSummary() {
             COALESCE(SUM(room_att_after), 0) as total_room_att_after,
             COALESCE(SUM(ship_att_after), 0) as total_ship_att_after,
             COALESCE(SUM(night_att_after), 0) as total_night_att_after
-        FROM attendees WHERE event_id = $event_id $type_condition
+        FROM attendees WHERE event_id = ? $type_filter
     ");
+    $stmt->execute($params);
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($summary) {
-        $summary['shops_came'] = 0;
+        // shops_came already calculated in SQL
     } else {
         $summary = [
             'total_shops' => 0,
@@ -429,7 +448,8 @@ function updateAttendee() {
             $id
         ]);
         
-        $stmt = $conn->query("SELECT event_id FROM attendees WHERE id = $id");
+        $stmt = $conn->prepare("SELECT event_id FROM attendees WHERE id = ?");
+        $stmt->execute([$id]);
         $event = $stmt->fetch(PDO::FETCH_ASSOC);
         updateSummary($event['event_id']);
         
@@ -445,7 +465,8 @@ function deleteAttendee() {
     $id = $_POST['id'] ?? 0;
     
     try {
-        $stmt = $conn->query("SELECT event_id FROM attendees WHERE id = $id");
+        $stmt = $conn->prepare("SELECT event_id FROM attendees WHERE id = ?");
+        $stmt->execute([$id]);
         $event = $stmt->fetch(PDO::FETCH_ASSOC);
         
         $stmt = $conn->prepare("DELETE FROM attendees WHERE id = ?");

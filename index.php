@@ -19,7 +19,7 @@ if (!isset($_SESSION['user_id'])) {
     <style>
         body { font-family: 'Kanit', sans-serif; background: #e9ecef; }
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .main-card .card-header { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; padding: 20px 25px; }
+        .main-card .card-header { background: #f0f0f0; color: #0d6efd; padding: 20px 25px; border-bottom: 1px solid #dee2e6; }
         .main-card .card-body { padding: 20px; }
         .summary-card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; }
         .summary-item { text-align: center; padding: 8px; }
@@ -54,18 +54,17 @@ if (!isset($_SESSION['user_id'])) {
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <img src="img/logo/logo text-01.png" alt="Logo" style="height: 35px;">
-                    <h5 class="m-0 text-white">บันทึกข้อมูลงาน Event</h5>
+                    <h5 class="m-0" style="color:#0d6efd">บันทึกข้อมูลงาน Event</h5>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="me-2 text-white-50"><?= $_SESSION['full_name'] ?? '' ?></span>
-                    <!--a href="dashboard.php" target="_blank" class="btn btn-info btn-sm">📊 Dashboard</a-->
+                    <span class="me-2 text-muted"><?= $_SESSION['full_name'] ?? '' ?></span>
                     <a href="dashboard.php" class="btn btn-info btn-sm">📊 Dashboard</a>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
                     <a href="manage_event.php" class="btn btn-primary btn-sm">📅 จัดการ Event</a>
                     <a href="manage_user.php" class="btn btn-warning btn-sm">👥 จัดการ</a>
                     <?php endif; ?>
-                    <a href="change_password.php" class="btn btn-outline-light btn-sm">🔑 เปลี่ยนรหัส</a>
-                    <a href="logout.php" class="btn btn-outline-light btn-sm">ออก</a>
+                    <a href="change_password.php" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
+                    <a href="logout.php" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
             </div>
             <div class="card-body">
@@ -478,7 +477,7 @@ if (!isset($_SESSION['user_id'])) {
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        let eventId = 0;
+        let eventId = <?= intval($_SESSION['event_id'] ?? 0) ?>;
         let modal;
         let tableShop, tableUser;
 
@@ -625,10 +624,14 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         function loadEvent() {
+            let body = 'action=get_event';
+            if (eventId > 0) {
+                body += '&event_id=' + eventId;
+            }
             fetch('api.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=get_event'
+                body: body
             })
             .then(res => res.json())
             .then(data => {
@@ -641,10 +644,11 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         function loadLastOrder() {
+            const type = document.querySelector('input[name="type"]:checked')?.value || 'shop';
             fetch('api.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'action=get_last_order&event_id=' + eventId
+                body: 'action=get_last_order&event_id=' + eventId + '&type=' + type
             })
             .then(res => res.json())
             .then(data => {
@@ -763,13 +767,7 @@ if (!isset($_SESSION['user_id'])) {
                 document.getElementById('totalTirePercentShop').textContent = shopTirePct + '%';
                 document.getElementById('totalTirePercentUser').textContent = userTirePct + '%';
 
-                // Update Attendance Card
-                document.getElementById('totalRoomAtt').textContent = shopData.total_room_att || 0;
-                document.getElementById('totalShipAtt').textContent = shopData.total_ship_att || 0;
-                document.getElementById('totalNightAtt').textContent = shopData.total_night_att || 0;
-                document.getElementById('totalRoomAttAfter').textContent = shopData.total_room_att_after || 0;
-                document.getElementById('totalShipAttAfter').textContent = shopData.total_ship_att_after || 0;
-                document.getElementById('totalNightAttAfter').textContent = shopData.total_night_att_after || 0;
+                // Attendance Card (reserved for future UI elements)
             });
         }
 

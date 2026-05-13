@@ -90,7 +90,7 @@ if (!isset($_SESSION['user_id'])) {
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
-    let eventId = 0;
+    let eventId = <?= intval($_SESSION['event_id'] ?? 0) ?>;
     let allData = [];
     let salesTable;
     let currentType = 'shop';
@@ -109,7 +109,11 @@ if (!isset($_SESSION['user_id'])) {
     });
 
     function loadData() {
-        fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=get_event' })
+        let body = 'action=get_event';
+        if (eventId > 0) {
+            body += '&event_id=' + eventId;
+        }
+        fetch('api.php', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: body })
             .then(res => res.json())
             .then(data => {
                 eventId = data.id;

@@ -64,39 +64,29 @@ foreach ($rows as $row) {
         if ($col === 'type') {
             $val = ($val === 'user') ? 'ผู้ใช้' : 'ร้านค้า';
         }
-        if (is_numeric($val) && $val == 0) {
-            $val = '';
-        }
         $data[] = $val;
     }
     fputcsv($output, $data);
 }
 
-$stmt = $conn->query("SELECT * FROM events WHERE id = $event_id");
+$stmt = $conn->prepare("SELECT * FROM events WHERE id = ?");
+$stmt->execute([$event_id]);
 $event = $stmt->fetch(PDO::FETCH_ASSOC);
 $eventName = $event['event_name'] ?? '';
 
-$totals = ['รวม', '', '', count($rows), '', '', '', 
-    array_sum(array_column($rows, 'participants_before')),
-    array_sum(array_column($rows, 'participants_after')),
-    array_sum(array_column($rows, 'reserve_room')),
-    array_sum(array_column($rows, 'used_room')),
-    array_sum(array_column($rows, 'tire_40_before')),
-    array_sum(array_column($rows, 'tire_80_before')),
-    array_sum(array_column($rows, 'tire_120_before')),
-    array_sum(array_column($rows, 'tire_200_before')),
-    array_sum(array_column($rows, 'tire_300_before')),
-    array_sum(array_column($rows, 'tire_600_before')),
-    array_sum(array_column($rows, 'tire_40_after')),
-    array_sum(array_column($rows, 'tire_80_after')),
-    array_sum(array_column($rows, 'tire_120_after')),
-    array_sum(array_column($rows, 'tire_200_after')),
-    array_sum(array_column($rows, 'tire_300_after')),
-    array_sum(array_column($rows, 'tire_600_after')),
-    array_sum(array_column($rows, 'room_att')),
-    array_sum(array_column($rows, 'ship_att')),
-    array_sum(array_column($rows, 'night_att'))
-];
+    $rowCount = count($rows);
+    $totals = [];
+    foreach ($columns as $k => $v) {
+        if ($k === 'ลำดับ') {
+            $totals[] = 'รวม';
+        } elseif ($k === 'รายชื่อ') {
+            $totals[] = $rowCount . ' รายการ';
+        } elseif (in_array($v, ['sales_name', 'order_no', 'type', 'province', 'note'])) {
+            $totals[] = '';
+        } else {
+            $totals[] = array_sum(array_column($rows, $v));
+        }
+    }
 fputcsv($output, $totals);
 
 fclose($output);
