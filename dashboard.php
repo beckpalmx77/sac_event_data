@@ -387,7 +387,7 @@ function loadAttendees() {
         data.forEach(i => {
             const s = i.sales_name || 'ไม่ระบุ';
             if (!stats[s]) {
-                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, room_att: 0, ship_att: 0, night_att: 0, room_att_after: 0, ship_att_after: 0, night_att_after: 0, tire_before: 0, tire_after: 0 };
+                stats[s] = { count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, room_att: 0, ship_att: 0, night_att: 0, room_att_after: 0, ship_att_after: 0, night_att_after: 0, tire_before: 0, tire_after: 0 };
                 tireSizes.forEach(size => {
                     stats[s]['tire_'+size+'_before'] = 0;
                     stats[s]['tire_'+size+'_after'] = 0;
@@ -401,8 +401,6 @@ function loadAttendees() {
             }
             stats[s].participants += parseInt(i.participants_before) || 0;
             stats[s].participants_after += parseInt(i.participants_after) || 0;
-            stats[s].reserveRoom += parseInt(i.reserve_room) || 0;
-            stats[s].usedRoom += parseInt(i.used_room) || 0;
             stats[s].room_att += parseInt(i.room_att) || 0;
             stats[s].ship_att += parseInt(i.ship_att) || 0;
             stats[s].night_att += parseInt(i.night_att) || 0;
@@ -422,8 +420,6 @@ function loadAttendees() {
         const totalNotCame = Object.values(stats).reduce((sum, s) => sum + s.not_came, 0);
         const totalParticipants = Object.values(stats).reduce((sum, s) => sum + s.participants, 0);
         const totalParticipantsAfter = Object.values(stats).reduce((sum, s) => sum + s.participants_after, 0);
-        const totalReserveRoom = Object.values(stats).reduce((sum, s) => sum + s.reserveRoom, 0);
-        const totalUsedRoom = Object.values(stats).reduce((sum, s) => sum + s.usedRoom, 0);
         const totalRoomAtt = Object.values(stats).reduce((sum, s) => sum + s.room_att, 0);
         const totalShipAtt = Object.values(stats).reduce((sum, s) => sum + s.ship_att, 0);
         const totalNightAtt = Object.values(stats).reduce((sum, s) => sum + s.night_att, 0);
@@ -440,8 +436,6 @@ function loadAttendees() {
             not_came: totalNotCame,
             participants: totalParticipants,
             participants_after: totalParticipantsAfter,
-            reserveRoom: totalReserveRoom,
-            usedRoom: totalUsedRoom,
             room_att: totalRoomAtt,
             ship_att: totalShipAtt,
             night_att: totalNightAtt,
@@ -466,8 +460,6 @@ function loadAttendees() {
             { title: 'ไม่มา', data: 'not_came' },
             { title: 'คน(ลงทะเบียน)', data: 'participants' },
             { title: 'คน(มาร่วมงาน)', data: 'participants_after' },
-            { title: 'จองห้อง', data: 'reserveRoom' },
-            { title: 'เข้าพักจริง', data: 'usedRoom' },
             { title: 'ยาง(จอง)', data: 'tire_before' },
             { title: 'ยาง-จริง', data: 'tire_after' }
         ];

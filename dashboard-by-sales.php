@@ -291,15 +291,13 @@ if (!empty($_SESSION['event_id'])) {
         data.forEach(i => {
             const s = i.sales_name || 'ไม่ระบุ';
             if (!stats[s]) {
-                stats[s] = { sales: s, count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, tire_before: 0, tire_after: 0 };
+                stats[s] = { sales: s, count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, tire_before: 0, tire_after: 0 };
                 tireSizes.forEach(sz => { stats[s]['tire_'+sz+'_before'] = 0; stats[s]['tire_'+sz+'_after'] = 0; });
             }
             stats[s].count++;
             if ((parseInt(i.participants_after) || 0) > 0) stats[s].came++; else stats[s].not_came++;
             stats[s].participants += parseInt(i.participants_before) || 0;
             stats[s].participants_after += parseInt(i.participants_after) || 0;
-            stats[s].reserveRoom += parseInt(i.reserve_room) || 0;
-            stats[s].usedRoom += parseInt(i.used_room) || 0;
 
             tireSizes.forEach(sz => {
                 const b = parseInt(i['tire_'+sz+'_before']) || 0;
@@ -313,12 +311,11 @@ if (!empty($_SESSION['event_id'])) {
 
         const tableData = Object.values(stats);
         if (tableData.length > 0) {
-            const totalRow = { sales: '<strong>รวมทั้งหมด</strong>', count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, reserveRoom: 0, usedRoom: 0, tire_before: 0, tire_after: 0 };
+            const totalRow = { sales: '<strong>รวมทั้งหมด</strong>', count: 0, came: 0, not_came: 0, participants: 0, participants_after: 0, tire_before: 0, tire_after: 0 };
             tireSizes.forEach(sz => { totalRow['tire_'+sz+'_before'] = 0; totalRow['tire_'+sz+'_after'] = 0; });
             tableData.forEach(row => {
                 totalRow.count += row.count; totalRow.came += row.came; totalRow.not_came += row.not_came;
                 totalRow.participants += row.participants; totalRow.participants_after += row.participants_after;
-                totalRow.reserveRoom += row.reserveRoom; totalRow.usedRoom += row.usedRoom;
                 totalRow.tire_before += row.tire_before; totalRow.tire_after += row.tire_after;
                 tireSizes.forEach(sz => { totalRow['tire_'+sz+'_before'] += row['tire_'+sz+'_before']; totalRow['tire_'+sz+'_after'] += row['tire_'+sz+'_after']; });
             });

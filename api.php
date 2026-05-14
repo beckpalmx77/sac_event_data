@@ -126,8 +126,6 @@ function addAttendee() {
     $note = $_POST['note'] ?? '';
     $participants_before = $_POST['participants_before'] ?? 0;
     $participants_after = $_POST['participants_after'] ?? 0;
-    $reserve_room = intval($_POST['reserve_room'] ?? 0);
-    $used_room = intval($_POST['used_room'] ?? 0);
     
     $tire_40_before = $_POST['tire_40_before'] ?? 0;
     $tire_40_after = $_POST['tire_40_after'] ?? 0;
@@ -152,17 +150,17 @@ function addAttendee() {
         $stmt = $conn->prepare("
             INSERT INTO attendees (
                 event_id, sales_name, order_no, total_no, shop_name, type, province, note,
-                participants_before, participants_after, reserve_room, used_room,
+                participants_before, participants_after,
                 tire_40_before, tire_40_after, tire_80_before, tire_80_after,
                 tire_120_before, tire_120_after, tire_200_before, tire_200_after,
                 tire_300_before, tire_300_after, tire_600_before, tire_600_after,
                 room_att, ship_att, night_att, room_att_after, ship_att_after, night_att_after
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             $event_id, $sales_name, $order_no, $total_no, $shop_name, $type, $province, $note,
-            $participants_before, $participants_after, $reserve_room, $used_room,
+            $participants_before, $participants_after,
             $tire_40_before, $tire_40_after, $tire_80_before, $tire_80_after,
             $tire_120_before, $tire_120_after, $tire_200_before, $tire_200_after,
             $tire_300_before, $tire_300_after, $tire_600_before, $tire_600_after,
@@ -186,8 +184,6 @@ function updateSummary($event_id) {
             SUM(CASE WHEN participants_after > 0 THEN 1 ELSE 0 END) as shops_came,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
-            COALESCE(SUM(reserve_room), 0) as total_reserve_room,
-            COALESCE(SUM(used_room), 0) as total_used_room,
             COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
             COALESCE(SUM(tire_40_after), 0) as total_tire_40_after,
             COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
@@ -220,7 +216,6 @@ function updateSummary($event_id) {
         UPDATE summary SET 
             total_shops = ?, shops_came = ?,
             total_participants_before = ?, total_participants_after = ?, 
-            total_reserve_room = ?, total_used_room = ?,
             total_tire_40_before = ?, total_tire_40_after = ?,
             total_tire_80_before = ?, total_tire_80_after = ?,
             total_tire_120_before = ?, total_tire_120_after = ?,
@@ -237,7 +232,6 @@ function updateSummary($event_id) {
         $stmt->execute([
         $result['total_shops'], $result['shops_came'],
         $result['total_participants_before'], $result['total_participants_after'],
-        $result['total_reserve_room'], $result['total_used_room'],
         $result['total_tire_40_before'], $result['total_tire_40_after'],
         $result['total_tire_80_before'], $result['total_tire_80_after'],
         $result['total_tire_120_before'], $result['total_tire_120_after'],
@@ -291,8 +285,6 @@ function getDashboardSummary() {
             SUM(CASE WHEN participants_after > 0 THEN 1 ELSE 0 END) as shops_came,
             COALESCE(SUM(participants_before), 0) as total_participants_before,
             COALESCE(SUM(participants_after), 0) as total_participants_after,
-            COALESCE(SUM(reserve_room), 0) as total_reserve_room,
-            COALESCE(SUM(used_room), 0) as total_used_room,
             COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
             COALESCE(SUM(tire_40_after), 0) as total_tire_40_after,
             COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
@@ -321,8 +313,6 @@ function getDashboardSummary() {
             'total_shops' => 0,
             'total_participants_before' => 0,
             'total_participants_after' => 0,
-            'total_reserve_room' => 0,
-            'total_used_room' => 0,
             'total_tire_40_before' => 0,
             'total_tire_40_after' => 0,
             'total_tire_80_before' => 0,
@@ -361,8 +351,6 @@ function updateAttendee() {
     $note = $_POST['note'] ?? '';
     $participants_before = $_POST['participants_before'] ?? 0;
     $participants_after = $_POST['participants_after'] ?? 0;
-    $reserve_room = intval($_POST['reserve_room'] ?? 0);
-    $used_room = intval($_POST['used_room'] ?? 0);
     
     $tire_40_before = $_POST['tire_40_before'] ?? 0;
     $tire_40_after = $_POST['tire_40_after'] ?? 0;
@@ -387,7 +375,7 @@ function updateAttendee() {
         $stmt = $conn->prepare("
             UPDATE attendees SET 
                 sales_name = ?, order_no = ?, total_no = ?, shop_name = ?, type = ?, province = ?, note = ?,
-                participants_before = ?, participants_after = ?, reserve_room = ?, used_room = ?,
+                participants_before = ?, participants_after = ?,
                 tire_40_before = ?, tire_40_after = ?, tire_80_before = ?, tire_80_after = ?,
                 tire_120_before = ?, tire_120_after = ?, tire_200_before = ?, tire_200_after = ?,
                 tire_300_before = ?, tire_300_after = ?, tire_600_before = ?, tire_600_after = ?,
@@ -397,7 +385,7 @@ function updateAttendee() {
         
         $stmt->execute([
             $sales_name, $order_no, $total_no, $shop_name, $type, $province, $note,
-            $participants_before, $participants_after, $reserve_room, $used_room,
+            $participants_before, $participants_after,
             $tire_40_before, $tire_40_after, $tire_80_before, $tire_80_after,
             $tire_120_before, $tire_120_after, $tire_200_before, $tire_200_after,
             $tire_300_before, $tire_300_after, $tire_600_before, $tire_600_after,

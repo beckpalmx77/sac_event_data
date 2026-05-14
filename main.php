@@ -123,14 +123,6 @@ if (!empty($_SESSION['event_id'])) {
                 <div class="label">% ยังไม่มา</div>
             </div>
             <div class="col-md-2 col-6 summary-item">
-                <div class="number" id="totalUseRoom">0</div>
-                <div class="label">จองห้องพัก</div>
-            </div>
-            <div class="col-md-2 col-6 summary-item">
-                <div class="number" id="totalUsedRoom">0</div>
-                <div class="label">ใช้ห้องจริง</div>
-            </div>
-            <div class="col-md-2 col-6 summary-item">
                 <div class="number" id="totalTireShop">0</div>
                 <div class="label">จองยาง</div>
             </div>
@@ -225,10 +217,8 @@ if (!empty($_SESSION['event_id'])) {
                                 <th>ประเภท</th>
                                 <th>จังหวัด</th>
                                 <th>หมายเหตุ</th>
-<th>คน (ก่อน)</th>
+                                <th>คน (ก่อน)</th>
                                 <th>คน (จริง)</th>
-                                <th>จองห้องพัก</th>
-                                <th>ใช้ห้องจริง</th>
                                 <th>จอง 40</th>
                                 <th>จอง 80</th>
                                 <th>จอง 120</th>
@@ -259,8 +249,8 @@ if (!empty($_SESSION['event_id'])) {
                                 <th>ประเภท</th>
                                 <th>จังหวัด</th>
                                 <th>หมายเหตุ</th>
-                                <th>คน (ก่อน)</th>
-                                <th>คน (จริง)</th>
+                                <th>คน (ลงทะเบียน)</th>
+                                <th>คน (มาจริง)</th>
                                 <th>จอง 40</th>
                                 <th>จอง 80</th>
                                 <th>จอง 120</th>
@@ -358,17 +348,7 @@ if (!empty($_SESSION['event_id'])) {
                                         <input type="number" class="form-control" id="participants_after" value="0">
                                     </div>
                                 </div>
-                                <div class="row mb-2" id="useRoomContainer">
-                                    <div class="col-md-6">
-                                        <label class="form-label">จองห้องพัก</label>
-                                        <input type="number" class="form-control" id="reserve_room" value="0" min="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="text-danger">ใช้ห้องจริง</label>
-                                        <input type="number" class="form-control" id="used_room" value="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="row mb-2">
+                    <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label class="form-label">จำนวนห้องพัก (room_att)</label>
                                         <input type="number" class="form-control" id="room_att" value="0" min="0">
@@ -499,8 +479,6 @@ if (!empty($_SESSION['event_id'])) {
             { title: 'หมายเหตุ', data: 'note' },
             { title: 'คน (ก่อน)', data: 'participants_before' },
             { title: 'คน (จริง)', data: 'participants_after' },
-            { title: 'จองห้องพัก', data: 'reserve_room' },
-            { title: 'ใช้ห้องจริง', data: 'used_room' },
             { title: 'จอง 40', data: 'tire_40_before' },
             { title: 'จอง 80', data: 'tire_80_before' },
             { title: 'จอง 120', data: 'tire_120_before' },
@@ -552,11 +530,8 @@ if (!empty($_SESSION['event_id'])) {
             initDataTables();
             loadEvent();
             loadProvinces();
-            setInterval(loadAttendees, 5000); // Reload ทุก 5 วินาที
-            setInterval(loadSummary, 5000); // Reload ทุก 5 วินาที
-            
-            document.getElementById('type_shop').addEventListener('change', updateUseRoomVisibility);
-            document.getElementById('type_user').addEventListener('change', updateUseRoomVisibility);
+            setInterval(loadAttendees, 5000);
+            setInterval(loadSummary, 5000);
         });
 
         let allProvinces = [];
@@ -673,8 +648,6 @@ if (!empty($_SESSION['event_id'])) {
             document.getElementById('total_no').value = 1;
             document.getElementById('participants_before').value = 0;
             document.getElementById('participants_after').value = 0;
-            
-            updateUseRoomVisibility();
         }
 
         let lastAttendeesData = '';
@@ -742,8 +715,6 @@ if (!empty($_SESSION['event_id'])) {
                 document.getElementById('totalParticipantsBeforeUser').textContent = userData.total_participants_before || 0;
                 document.getElementById('totalParticipantsAfterUser').textContent = userData.total_participants_after || 0;
                 
-                document.getElementById('totalUseRoom').textContent = shopData.total_reserve_room || 0;
-                document.getElementById('totalUsedRoom').textContent = shopData.total_used_room || 0;
                 
                 const shopPct = shopData.total_participants_before > 0 
                     ? Math.round(shopData.total_participants_after / shopData.total_participants_before * 100) 
@@ -787,11 +758,6 @@ if (!empty($_SESSION['event_id'])) {
             });
         }
 
-        function updateUseRoomVisibility() {
-            const isShop = document.getElementById('type_shop').checked;
-            document.getElementById('useRoomContainer').style.display = isShop ? 'flex' : 'none';
-        }
-
         function fetchLastUpdate() {
             fetch('api.php', {
                 method: 'POST',
@@ -830,13 +796,10 @@ if (!empty($_SESSION['event_id'])) {
                     } else {
                         document.getElementById('type_shop').checked = true;
                     }
-                    updateUseRoomVisibility();
                     document.getElementById('province').value = item.province || '';
                     document.getElementById('note').value = item.note || '';
                     document.getElementById('participants_before').value = item.participants_before || 0;
                     document.getElementById('participants_after').value = item.participants_after || 0;
-                    document.getElementById('reserve_room').value = item.reserve_room || 0;
-                    document.getElementById('used_room').value = item.used_room || 0;
                     
                     ['40','80','120','200','300','600'].forEach(t => {
                         const el = document.getElementById('tire_'+t+'_before');
@@ -874,8 +837,6 @@ if (!empty($_SESSION['event_id'])) {
             formData.append('note', document.getElementById('note').value);
             formData.append('participants_before', document.getElementById('participants_before').value);
             formData.append('participants_after', document.getElementById('participants_after').value);
-            formData.append('reserve_room', document.getElementById('reserve_room').value || 0);
-            formData.append('used_room', document.getElementById('used_room').value || 0);
             ['40','80','120','200','300','600'].forEach(t => {
                 const el = document.getElementById('tire_'+t+'_before');
                 formData.append('tire_'+t+'_before', el ? el.value : 0);

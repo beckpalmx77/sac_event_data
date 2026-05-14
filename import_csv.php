@@ -52,9 +52,8 @@ function importCSV($file, $type) {
         $province = isset($row[5]) ? trim($row[5]) : '';
         $note = isset($row[6]) ? trim($row[6]) : '';
         $participants = isset($row[7]) ? intval(trim($row[7])) : 0;
-        $reserveRoom = isset($row[8]) ? intval(trim($row[8])) : 0;
         
-        $tire_40 = isset($row[9]) ? intval(trim(str_replace(' ', '', $row[9]))) : 0;
+        $tire_40 = isset($row[8]) ? intval(trim(str_replace(' ', '', $row[8]))) : 0;
         $tire_80 = isset($row[10]) ? intval(trim(str_replace(' ', '', $row[10]))) : 0;
         $tire_120 = isset($row[11]) ? intval(trim(str_replace(' ', '', $row[11]))) : 0;
         $tire_200 = isset($row[12]) ? intval(trim($row[12])) : 0;
@@ -64,15 +63,15 @@ function importCSV($file, $type) {
         $stmt = $conn->prepare("
             INSERT INTO attendees (
                 event_id, sales_name, order_no, total_no, shop_name, type, province, note,
-                participants_before, participants_after, reserve_room,
+                participants_before, participants_after,
                 tire_40_before, tire_80_before, tire_120_before, tire_200_before, tire_300_before, tire_600_before,
                 tire_40_after, tire_80_after, tire_120_after, tire_200_after, tire_300_after, tire_600_after
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             $event_id, $salesName, $orderNo, $totalNo, $shopName, $type, $province, $note,
-            $participants, $participants, $reserveRoom,
+            $participants, $participants,
             $tire_40, $tire_80, $tire_120, $tire_200, $tire_300, $tire_600,
             $tire_40, $tire_80, $tire_120, $tire_200, $tire_300, $tire_600
         ]);
@@ -94,7 +93,6 @@ $stmt = $conn->prepare("
         SUM(CASE WHEN type = 'user' THEN 1 ELSE 0 END) as user_count,
         COALESCE(SUM(participants_before), 0) as total_participants_before,
         COALESCE(SUM(participants_after), 0) as total_participants_after,
-        COALESCE(SUM(reserve_room), 0) as total_reserve_room,
         COALESCE(SUM(tire_40_before), 0) as total_tire_40_before,
         COALESCE(SUM(tire_80_before), 0) as total_tire_80_before,
         COALESCE(SUM(tire_120_before), 0) as total_tire_120_before,
@@ -120,8 +118,7 @@ $total_tire_after = $result['total_tire_40_after'] + $result['total_tire_80_afte
 $stmt = $conn->prepare("
     UPDATE summary SET 
         total_shops = ?, shops_came = ?,
-        total_participants_before = ?, total_participants_after = ?, 
-        total_reserve_room = ?,
+        total_participants_before = ?, total_participants_after = ?,
         total_tire_40_before = ?, total_tire_40_after = ?,
         total_tire_80_before = ?, total_tire_80_after = ?,
         total_tire_120_before = ?, total_tire_120_after = ?,
@@ -135,7 +132,6 @@ $stmt = $conn->prepare("
 $stmt->execute([
     $result['total_shops'], $result['shops_came'],
     $result['total_participants_before'], $result['total_participants_after'],
-    $result['total_reserve_room'],
     $result['total_tire_40_before'], $result['total_tire_40_after'],
     $result['total_tire_80_before'], $result['total_tire_80_after'],
     $result['total_tire_120_before'], $result['total_tire_120_after'],
