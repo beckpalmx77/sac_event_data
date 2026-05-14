@@ -182,7 +182,7 @@ if (isset($_GET['edit'])) {
                             <div class="card-header bg-secondary text-white">
                                 <h5 class="mb-0"><i class="bi bi-calendar3"></i> รายการงาน Event (<?= count($events) ?>)</h5>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                                 <?php if (empty($events)): ?>
                                     <div class="text-center text-muted py-4">
                                         <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
