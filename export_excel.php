@@ -56,8 +56,11 @@ $columns = [
     'จองจริง 300' => 'tire_300_after',
     'จองจริง 600' => 'tire_600_after',
     'ห้องพัก' => 'room_att',
+    'ห้องพัก (จริง)' => 'room_att_after',
     'ล่องเรือ' => 'ship_att',
+    'ล่องเรือ (จริง)' => 'ship_att_after',
     'งานเลี้ยงเย็น' => 'night_att',
+    'งานเลี้ยงเย็น (จริง)' => 'night_att_after',
 ];
 
 function getSheetData($type, $conn, $columns, $event_id) {

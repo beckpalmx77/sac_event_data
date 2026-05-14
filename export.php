@@ -51,14 +51,17 @@ $columns = [
     'จองจริง 300' => 'tire_300_after',
     'จองจริง 600' => 'tire_600_after',
     'ห้องพัก' => 'room_att',
+    'ห้องพัก (จริง)' => 'room_att_after',
     'ล่องเรือ' => 'ship_att',
+    'ล่องเรือ (จริง)' => 'ship_att_after',
     'งานเลี้ยงเย็น' => 'night_att',
+    'งานเลี้ยงเย็น (จริง)' => 'night_att_after',
  ];
 
 $header = array_keys($columns);
 fputcsv($output, $header);
 
-$stmt = $conn->prepare("SELECT * FROM attendees WHERE event_id = ? AND type = ? ORDER BY id");
+$stmt = $conn->prepare("SELECT * FROM attendees WHERE event_id = ? AND type = ? ORDER BY total_no");
 $stmt->execute([$event_id, $type]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

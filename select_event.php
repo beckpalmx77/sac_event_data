@@ -40,7 +40,7 @@ if (isset($_SESSION['event_id'])) {
     exit;
 }
 
-$stmt = $conn->query("SELECT * FROM events ORDER BY id DESC");
+$stmt = $conn->query("SELECT * FROM events WHERE event_date IS NULL OR event_date >= CURDATE() ORDER BY id DESC");
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -159,7 +159,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php else: ?>
                     <form method="POST">
                         <input type="hidden" name="select_event" value="1">
-                        <div class="d-grid gap-2">
+                        <div class="d-grid gap-2" style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
                             <?php foreach ($events as $event): ?>
                             <button type="submit" name="event_id" value="<?= $event['id'] ?>" class="btn event-btn text-start">
                                 <div class="d-flex justify-content-between align-items-center">
