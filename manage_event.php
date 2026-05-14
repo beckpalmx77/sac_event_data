@@ -115,8 +115,6 @@ if (isset($_GET['edit'])) {
                     <span class="me-2 text-muted small" id="headerClock"></span>
                     <?php nav_link('manage_user', '👥 จัดการผู้ใช้', 'manage_user'); ?>
                     <?php nav_link('manage_permission', '🔐 จัดการสิทธิ์', 'manage_permission'); ?>
-                    <?php nav_link('dashboard', '📊 Dashboard', 'dashboard'); ?>
-                    <a href="main" class="btn btn-outline-secondary btn-sm">🏠 หน้าหลัก</a>
                     <a href="change_password" class="btn btn-outline-secondary btn-sm">🔑 เปลี่ยนรหัส</a>
                     <a href="logout" class="btn btn-outline-secondary btn-sm">ออก</a>
                 </div>
